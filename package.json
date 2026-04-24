@@ -1,0 +1,18 @@
+{
+  "name": "paperlab-experiment-logic-parser",
+  "version": "1.0.0",
+  "description": "AI辅助阅读工具 - 将学术实验文本转化为结构化逻辑模块与交互式思维导图",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["ai", "academic-reading", "mind-map", "deepseek"],
+  "author": "PaperLab",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.0"
+  }
+}
