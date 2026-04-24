@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaperLab - 实验逻辑解析器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary-color: #3b82f6;
+      --primary-dark: #2563eb;
+      --secondary-color: #8b5cf6;
+      --success-color: #10b981;
+      --warning-color: #f59e0b;
+      --danger-color: #ef4444;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-primary: #1e293b;
+      --text-secondary: #64748b;
+      --border-color: #e2e8f0;
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      color: white;
+      padding: 2rem 1rem;
+      text-align: center;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .config-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .config-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .api-key-input {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .api-key-input input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      font-family: monospace;
+    }
+
+    .api-key-input input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .api-key-input button {
+      padding: 0.75rem 1.5rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .api-key-input button:hover {
+      background: var(--primary-dark);
+    }
+
+    .input-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .input-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .textarea-wrapper {
+      position: relative;
+    }
+
+    .textarea-wrapper textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      resize: vertical;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .textarea-wrapper textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .char-count {
+      position: absolute;
+      bottom: 0.75rem;
+      right: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.75rem 2rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-color);
+      color: var(--text-primary);
+      border: 2px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab:hover {
+      border-color: var(--primary-color);
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      border-color: transparent;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .results-section {
+      display: none;
+    }
+
+    .results-section.show {
+      display: block;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .error-message {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .card-content {
+      color: var(--text-primary);
+      line-height: 1.8;
+    }
+
+    .card-content h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 1rem 0 0.5rem;
+    }
+
+    .card-content h4:first-child {
+      margin-top: 0;
+    }
+
+    .variables-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+    }
+
+    .variables-table th,
+    .variables-table td {
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .variables-table th {
+      background: var(--bg-color);
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .variables-table ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .variables-table li {
+      padding: 0.25rem 0;
+    }
+
+    .variables-table li::before {
+      content: '• ';
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+
+    .mindmap-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .mindmap-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .mindmap-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .mindmap-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      padding: 0.5rem 1rem;
+      background: var(--bg-color);
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .control-btn:hover {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .mindmap-container {
+      position: relative;
+      width: 100%;
+      height: 600px;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      background: linear-gradient(45deg, #f8fafc 25%, transparent 25%), linear-gradient(-45deg, #f8fafc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f8fafc 75%), linear-gradient(-45deg, transparent 75%, #f8fafc 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+
+    .mindmap-svg {
+      width: 100%;
+      height: 100%;
+      cursor: grab;
+    }
+
+    .mindmap-svg:active {
+      cursor: grabbing;
+    }
+
+    .zoom-controls {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 10;
+    }
+
+    .zoom-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .zoom-btn:hover {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .mindmap-node {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .mindmap-node:hover .node-rect {
+      filter: brightness(1.1);
+      stroke-width: 3;
+    }
+
+    .node-rect {
+      stroke-width: 2;
+      transition: all 0.3s ease;
+    }
+
+    .node-text {
+      font-size: 12px;
+      fill: #1e293b;
+      pointer-events: none;
+    }
+
+    .center-node .node-rect {
+      fill: #3b82f6;
+      stroke: #2563eb;
+    }
+
+    .center-node .node-text {
+      fill: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .branch-1 .node-rect {
+      fill: #dbeafe;
+      stroke: #3b82f6;
+    }
+
+    .branch-2 .node-rect {
+      fill: #ddd6fe;
+      stroke: #8b5cf6;
+    }
+
+    .branch-3 .node-rect {
+      fill: #dcfce7;
+      stroke: #10b981;
+    }
+
+    .branch-4 .node-rect {
+      fill: #fef3c7;
+      stroke: #f59e0b;
+    }
+
+    .sub-branch .node-rect {
+      fill: #f8fafc;
+      stroke: #cbd5e1;
+    }
+
+    .fullscreen-mode {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 9999;
+      background: white;
+    }
+
+    .fullscreen-mode .mindmap-container {
+      height: calc(100vh - 100px);
+      border: none;
+    }
+
+    .history-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .history-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 1rem;
+      background: var(--bg-color);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .history-item:hover {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .history-item-content {
+      flex: 1;
+    }
+
+    .history-item-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .history-item-preview {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .history-item-time {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      margin-left: 1rem;
+    }
+
+    .history-item-delete {
+      margin-left: 0.5rem;
+      padding: 0.25rem 0.5rem;
+      background: #fef2f2;
+      color: #dc2626;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+    }
+
+    .history-item-delete:hover {
+      background: #fee2e2;
+    }
+
+    .empty-history {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+
+    .story-section {
+      background: linear-gradient(135deg, #dbeafe 0%, #ddd6fe 100%);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .story-section h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .story-content {
+      font-size: 1.05rem;
+      line-height: 2;
+      color: var(--text-primary);
+    }
+
+    .terms-section {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .terms-section h3 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .terms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .term-item {
+      background: var(--bg-color);
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    .term-name {
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .term-explanation {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .copy-btn {
+      padding: 0.5rem 1rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 1rem;
+    }
+
+    .copy-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--success-color);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-weight: 500;
+      z-index: 10000;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
+    }
+
+    .status-configured {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-not-configured {
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .api-key-input {
+        flex-direction: column;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        justify-content: center;
+      }
+
+      .mindmap-container {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🔬 PaperLab - 实验逻辑解析器</h1>
+    <p>AI辅助阅读工具 - 将晦涩复杂的学术实验文本一键转化为清晰的结构化逻辑模块</p>
+  </div>
+
+  <div class="container">
+    <div class="config-section">
+      <h3>
+        <span>🔑</span>
+        API 配置
+        <span id="api-status" class="status-badge status-not-configured">未配置</span>
+      </h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        请配置您的 DeepSeek API Key。API Key 仅保存在您的浏览器本地，不会上传到服务器。
+        <a href="https://platform.deepseek.com/api_keys" target="_blank" style="color: var(--primary-color);">获取 API Key</a>
+      </p>
+      <div class="api-key-input">
+        <input type="password" id="api-key-input" placeholder="请输入您的 DeepSeek API Key (sk-...)" autocomplete="off">
+        <button id="save-api-key">保存配置</button>
+        <button id="clear-api-key" style="background: var(--danger-color);">清除</button>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <h3>
+        <span>📚</span>
+        历史记录
+        <button id="clear-history" class="history-item-delete" style="margin-left: auto;">清空全部</button>
+      </h3>
+      <div class="history-list" id="history-list">
+        <div class="empty-history">暂无历史记录</div>
+      </div>
+    </div>
+
+    <div class="input-section">
+      <h3>
+        <span>📝</span>
+        输入实验文本
+      </h3>
+      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        请粘贴需要解析的学术实验文本（支持 100-10000 字）
+      </p>
+      <div class="textarea-wrapper">
+        <textarea id="experiment-text" placeholder="请在此粘贴您的学术实验文本...
+
+例如：本研究旨在探讨睡眠剥夺对工作记忆容量的影响及其神经机制。实验采用随机对照设计，共招募60名健康大学生被试，随机分为睡眠剥夺组（30人，连续24小时不睡）和正常睡眠组（30人）。实验材料包括数字广度测验、n-back任务以及功能性磁共振成像扫描。实验流程如下：首先所有被试完成基线测量，包括数字广度测验和情绪量表；随后睡眠剥夺组在实验室中保持清醒24小时，对照组正常睡眠；24小时后，两组被试完成n-back任务（0-back、2-back、3-back条件）的fMRI扫描，同时记录行为数据。数据分析采用独立样本t检验和全脑激活分析..."></textarea>
+        <div class="char-count"><span id="current-chars">0</span> / 10000 字</div>
+      </div>
+      <div class="action-buttons">
+        <button id="parse-btn" class="btn btn-primary">
+          <span>🚀</span>
+          开始解析
+        </button>
+        <button id="clear-btn" class="btn btn-secondary">
+          <span>🗑️</span>
+          清空文本
+        </button>
+      </div>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;">
+      <div class="loading-spinner"></div>
+      <p style="color: var(--text-secondary);">AI 正在解析中，请稍候...</p>
+    </div>
+
+    <div id="error-message" class="error-message" style="display: none;"></div>
+
+    <div id="results-section" class="results-section">
+      <div class="tabs">
+        <button class="tab active" data-tab="cards">
+          <span>📋</span>
+          卡片视图
+        </button>
+        <button class="tab" data-tab="mindmap">
+          <span>🧠</span>
+          思维导图
+        </button>
+        <button class="tab" data-tab="story">
+          <span>📖</span>
+          故事化解读
+        </button>
+        <button class="tab" data-tab="terms">
+          <span>📚</span>
+          术语释义
+        </button>
+      </div>
+
+      <div id="tab-cards" class="tab-content active">
+        <div class="cards-grid" id="cards-container">
+        </div>
+      </div>
+
+      <div id="tab-mindmap" class="tab-content">
+        <div class="mindmap-section">
+          <div class="mindmap-header">
+            <div class="mindmap-title">
+              <span>🧠</span>
+              交互式思维导图
+            </div>
+            <div class="mindmap-controls">
+              <button class="control-btn" id="reset-view">
+                <span>🔄</span>
+                重置视图
+              </button>
+              <button class="control-btn" id="toggle-fullscreen">
+                <span>⛶</span>
+                全屏模式
+              </button>
+            </div>
+          </div>
+          <div class="mindmap-container" id="mindmap-container">
+            <svg class="mindmap-svg" id="mindmap-svg">
+              <g id="mindmap-group">
+              </g>
+            </svg>
+            <div class="zoom-controls">
+              <button class="zoom-btn" id="zoom-in">+</button>
+              <button class="zoom-btn" id="zoom-reset">⌂</button>
+              <button class="zoom-btn" id="zoom-out">−</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-story" class="tab-content">
+        <div class="story-section" id="story-section">
+          <h3>
+            <span>📖</span>
+            故事化解读
+          </h3>
+          <div class="story-content" id="story-content"></div>
+          <button class="copy-btn" data-copy="story">复制内容</button>
+        </div>
+      </div>
+
+      <div id="tab-terms" class="tab-content">
+        <div class="terms-section">
+          <h3>
+            <span>📚</span>
+            专业术语释义
+          </h3>
+          <div class="terms-grid" id="terms-grid">
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 2rem;">
+        <button class="btn btn-secondary" id="copy-all-btn" style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%); color: white; border: none;">
+          <span>📋</span>
+          一键复制全部内容
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      apiKey: localStorage.getItem('deepseek_api_key') || '',
+      parsedData: null,
+      history: JSON.parse(localStorage.getItem('paperlab_history') || '[]'),
+      mindmapScale: 1,
+      mindmapTranslateX: 0,
+      mindmapTranslateY: 0,
+      isDragging: false,
+      dragStartX: 0,
+      dragStartY: 0
+    };
+
+    const moduleIcons = {
+      researchPurpose: { icon: '🎯', title: '研究目的', color: '#3b82f6' },
+      hypothesis: { icon: '💡', title: '实验假设', color: '#8b5cf6' },
+      experimentDesign: { icon: '📐', title: '实验设计', color: '#10b981' },
+      materialsMethods: { icon: '🔬', title: '材料与方法', color: '#f59e0b' },
+      keyVariables: { icon: '⚖️', title: '关键变量', color: '#ef4444' },
+      results: { icon: '📊', title: '实验结果', color: '#06b6d4' },
+      conclusion: { icon: '🏆', title: '核心结论', color: '#84cc16' },
+      limitations: { icon: '⚠️', title: '局限性', color: '#f97316' },
+      readingTips: { icon: '💡', title: '阅读建议', color: '#ec4899' }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initEventListeners();
+      updateApiStatus();
+      renderHistory();
+      initMindmap();
+    });
+
+    function initEventListeners() {
+      document.getElementById('save-api-key').addEventListener('click', saveApiKey);
+      document.getElementById('clear-api-key').addEventListener('click', clearApiKey);
+      document.getElementById('experiment-text').addEventListener('input', updateCharCount);
+      document.getElementById('parse-btn').addEventListener('click', parseText);
+      document.getElementById('clear-btn').addEventListener('click', clearText);
+      document.getElementById('clear-history').addEventListener('click', clearAllHistory);
+      document.getElementById('copy-all-btn').addEventListener('click', copyAllContent);
+
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+      });
+
+      document.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', () => copyContent(btn.dataset.copy));
+      });
+
+      document.getElementById('zoom-in').addEventListener('click', () => zoomMindmap(1.2));
+      document.getElementById('zoom-out').addEventListener('click', () => zoomMindmap(0.8));
+      document.getElementById('zoom-reset').addEventListener('click', resetMindmap);
+      document.getElementById('reset-view').addEventListener('click', resetMindmap);
+      document.getElementById('toggle-fullscreen').addEventListener('click', toggleFullscreen);
+    }
+
+    function updateApiStatus() {
+      const statusEl = document.getElementById('api-status');
+      if (state.apiKey) {
+        statusEl.textContent = '已配置';
+        statusEl.className = 'status-badge status-configured';
+        document.getElementById('api-key-input').value = state.apiKey;
+      } else {
+        statusEl.textContent = '未配置';
+        statusEl.className = 'status-badge status-not-configured';
+      }
+    }
+
+    function saveApiKey() {
+      const apiKey = document.getElementById('api-key-input').value.trim();
+      if (!apiKey) {
+        showToast('请输入有效的 API Key', 'error');
+        return;
+      }
+      localStorage.setItem('deepseek_api_key', apiKey);
+      state.apiKey = apiKey;
+      updateApiStatus();
+      showToast('API Key 已保存');
+    }
+
+    function clearApiKey() {
+      localStorage.removeItem('deepseek_api_key');
+      state.apiKey = '';
+      document.getElementById('api-key-input').value = '';
+      updateApiStatus();
+      showToast('API Key 已清除');
+    }
+
+    function updateCharCount() {
+      const text = document.getElementById('experiment-text').value;
+      document.getElementById('current-chars').textContent = text.length;
+    }
+
+    function clearText() {
+      document.getElementById('experiment-text').value = '';
+      updateCharCount();
+    }
+
+    async function parseText() {
+      const text = document.getElementById('experiment-text').value.trim();
+      
+      if (text.length < 100 || text.length > 10000) {
+        showError('文本长度必须在 100-10000 字之间');
+        return;
+      }
+
+      const apiKey = state.apiKey || document.getElementById('api-key-input').value.trim();
+      if (!apiKey) {
+        showError('请先配置 DeepSeek API Key');
+        return;
+      }
+
+      hideError();
+      showLoading();
+
+      try {
+        const response = await fetch('/api/parse', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ text, apiKey })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || '解析失败');
+        }
+
+        state.parsedData = result.data;
+        hideLoading();
+        renderResults();
+        saveToHistory(text, result.data);
+        
+      } catch (error) {
+        hideLoading();
+        showError(error.message || '解析失败，请重试');
+      }
+    }
+
+    function showLoading() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('parse-btn').disabled = true;
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('parse-btn').disabled = false;
+    }
+
+    function showError(message) {
+      const errorEl = document.getElementById('error-message');
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('error-message').style.display = 'none';
+    }
+
+    function renderResults() {
+      document.getElementById('results-section').classList.add('show');
+      renderCards();
+      renderMindmap();
+      renderStory();
+      renderTerms();
+      switchTab('cards');
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cards-container');
+      const data = state.parsedData;
+      
+      container.innerHTML = '';
+
+      container.innerHTML += createPurposeCard(data.researchPurpose);
+      container.innerHTML += createHypothesisCard(data.hypothesis);
+      container.innerHTML += createDesignCard(data.experimentDesign);
+      container.innerHTML += createMaterialsCard(data.materialsMethods);
+      container.innerHTML += createVariablesCard(data.keyVariables);
+      container.innerHTML += createResultsCard(data.results);
+      container.innerHTML += createConclusionCard(data.conclusion);
+      container.innerHTML += createLimitationsCard(data.limitations);
+      container.innerHTML += createReadingTipsCard(data.readingTips);
+    }
+
+    function createCard(moduleKey, content) {
+      const config = moduleIcons[moduleKey];
+      return `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon" style="background: ${config.color}20;">
+              ${config.icon}
+            </div>
+            <div class="card-title">${config.title}</div>
+          </div>
+          <div class="card-content">
+            ${content}
+          </div>
+        </div>
+      `;
+    }
+
+    function createPurposeCard(data) {
+      return createCard('researchPurpose', `<p>${data?.content || '暂无数据'}</p>`);
+    }
+
+    function createHypothesisCard(data) {
+      return createCard('hypothesis', `<p>${data?.content || '暂无数据'}</p>`);
+    }
+
+    function createDesignCard(data) {
+      return createCard('experimentDesign', `
+        <h4>设计类型</h4>
+        <p>${data?.type || '暂无数据'}</p>
+        <h4>通俗描述</h4>
+        <p>${data?.description || '暂无数据'}</p>
+      `);
+    }
+
+    function createMaterialsCard(data) {
+      return createCard('materialsMethods', `
+        <h4>实验对象</h4>
+        <p>${data?.subjects || '暂无数据'}</p>
+        <h4>实验材料</h4>
+        <p>${data?.materials || '暂无数据'}</p>
+        <h4>流程步骤</h4>
+        <p>${data?.procedure || '暂无数据'}</p>
+        <h4>关键技术</h4>
+        <p>${data?.techniques || '暂无数据'}</p>
+      `);
+    }
+
+    function createVariablesCard(data) {
+      return createCard('keyVariables', `
+        <table class="variables-table">
+          <thead>
+            <tr>
+              <th>自变量</th>
+              <th>因变量</th>
+              <th>控制变量</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <ul>
+                  ${(data?.independent || ['暂无数据']).map(v => `<li>${v}</li>`).join('')}
+                </ul>
+              </td>
+              <td>
+                <ul>
+                  ${(data?.dependent || ['暂无数据']).map(v => `<li>${v}</li>`).join('')}
+                </ul>
+              </td>
+              <td>
+                <ul>
+                  ${(data?.control || ['暂无数据']).map(v => `<li>${v}</li>`).join('')}
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      `);
+    }
+
+    function createResultsCard(data) {
+      return createCard('results', `
+        <h4>主要发现</h4>
+        <p>${data?.mainFindings || '暂无数据'}</p>
+        <h4>数据要点</h4>
+        <p>${data?.dataPoints || '暂无数据'}</p>
+      `);
+    }
+
+    function createConclusionCard(data) {
+      return createCard('conclusion', `<p>${data?.content || '暂无数据'}</p>`);
+    }
+
+    function createLimitationsCard(data) {
+      return createCard('limitations', `<p>${data?.content || '暂无数据'}</p>`);
+    }
+
+    function createReadingTipsCard(data) {
+      return createCard('readingTips', `<p>${data?.content || '暂无数据'}</p>`);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabName);
+      });
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    function renderStory() {
+      const content = state.parsedData?.storyInterpretation || '暂无故事化解读';
+      document.getElementById('story-content').textContent = content;
+    }
+
+    function renderTerms() {
+      const container = document.getElementById('terms-grid');
+      const terms = state.parsedData?.keyTerms || [];
+      
+      if (terms.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary);">暂无术语释义</p>';
+        return;
+      }
+
+      container.innerHTML = terms.map(term => `
+        <div class="term-item">
+          <div class="term-name">${term.term}</div>
+          <div class="term-explanation">${term.explanation}</div>
+        </div>
+      `).join('');
+    }
+
+    function initMindmap() {
+      const svg = document.getElementById('mindmap-svg');
+      const group = document.getElementById('mindmap-group');
+
+      svg.addEventListener('wheel', handleWheel);
+      svg.addEventListener('mousedown', handleMouseDown);
+      svg.addEventListener('mousemove', handleMouseMove);
+      svg.addEventListener('mouseup', handleMouseUp);
+      svg.addEventListener('mouseleave', handleMouseUp);
+    }
+
+    function renderMindmap() {
+      const group = document.getElementById('mindmap-group');
+      const data = state.parsedData;
+      
+      group.innerHTML = '';
+
+      const nodes = [];
+      const links = [];
+
+      const centerText = truncateText(data?.researchPurpose?.content || '实验研究', 15);
+      const centerNode = {
+        id: 'center',
+        text: centerText,
+        x: 0,
+        y: 0,
+        class: 'center-node',
+        width: 160,
+        height: 50
+      };
+      nodes.push(centerNode);
+
+      const modules = [
+        { key: 'hypothesis', title: '实验假设', data: data?.hypothesis, branch: 'branch-1' },
+        { key: 'experimentDesign', title: '实验设计', data: data?.experimentDesign, branch: 'branch-2' },
+        { key: 'materialsMethods', title: '材料与方法', data: data?.materialsMethods, branch: 'branch-3' },
+        { key: 'keyVariables', title: '关键变量', data: data?.keyVariables, branch: 'branch-4' },
+        { key: 'results', title: '实验结果', data: data?.results, branch: 'branch-1' },
+        { key: 'conclusion', title: '核心结论', data: data?.conclusion, branch: 'branch-2' },
+        { key: 'limitations', title: '局限性', data: data?.limitations, branch: 'branch-3' },
+        { key: 'readingTips', title: '阅读建议', data: data?.readingTips, branch: 'branch-4' }
+      ];
+
+      const radius = 180;
+      const subRadius = 100;
+
+      modules.forEach((module, index) => {
+        const angle = (index / modules.length) * 2 * Math.PI - Math.PI / 2;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+
+        const moduleText = truncateText(getModuleText(module.data, module.key), 10);
+        
+        const moduleNode = {
+          id: `module-${index}`,
+          text: module.title,
+          x,
+          y,
+          class: module.branch,
+          width: 120,
+          height: 40
+        };
+        nodes.push(moduleNode);
+
+        links.push({ from: centerNode, to: moduleNode });
+
+        const subItems = getSubItems(module.data, module.key);
+        subItems.forEach((item, subIndex) => {
+          const subAngle = angle + (subIndex - subItems.length / 2 + 0.5) * 0.3;
+          const subX = x + Math.cos(subAngle) * subRadius;
+          const subY = y + Math.sin(subAngle) * subRadius;
+
+          const subNode = {
+            id: `module-${index}-sub-${subIndex}`,
+            text: truncateText(item, 8),
+            x: subX,
+            y: subY,
+            class: 'sub-branch',
+            width: 100,
+            height: 35
+          };
+          nodes.push(subNode);
+          links.push({ from: moduleNode, to: subNode });
+        });
+      });
+
+      links.forEach(link => {
+        const path = createLinkPath(link);
+        group.innerHTML += path;
+      });
+
+      nodes.forEach(node => {
+        group.innerHTML += createNode(node);
+      });
+
+      resetMindmap();
+    }
+
+    function getModuleText(data, key) {
+      if (!data) return '';
+      switch(key) {
+        case 'hypothesis':
+        case 'conclusion':
+        case 'limitations':
+        case 'readingTips':
+          return data.content || '';
+        case 'experimentDesign':
+          return data.type || '';
+        case 'materialsMethods':
+          return data.subjects || '';
+        case 'keyVariables':
+          return (data.independent || [])[0] || '';
+        case 'results':
+          return data.mainFindings || '';
+        default:
+          return '';
+      }
+    }
+
+    function getSubItems(data, key) {
+      if (!data) return [];
+      switch(key) {
+        case 'materialsMethods':
+          return [
+            data.subjects ? '对象' : '',
+            data.materials ? '材料' : '',
+            data.procedure ? '步骤' : '',
+            data.techniques ? '技术' : ''
+          ].filter(Boolean);
+        case 'keyVariables':
+          return ['自变量', '因变量', '控制变量'];
+        case 'experimentDesign':
+          return [data.type, data.description].filter(Boolean);
+        case 'results':
+          return ['主要发现', '数据要点'];
+        default:
+          return [];
+      }
+    }
+
+    function truncateText(text, maxLength) {
+      if (!text) return '无数据';
+      text = String(text);
+      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    }
+
+    function createNode(node) {
+      const { x, y, width, height, text, class: cls } = node;
+      return `
+        <g class="mindmap-node ${cls}" transform="translate(${x - width/2}, ${y - height/2})">
+          <rect class="node-rect" width="${width}" height="${height}" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+          <text class="node-text" x="${width/2}" y="${height/2 + 4}" text-anchor="middle" dominant-baseline="middle">${text}</text>
+        </g>
+      `;
+    }
+
+    function createLinkPath(link) {
+      const { from, to } = link;
+      const midX = (from.x + to.x) / 2;
+      const midY = (from.y + to.y) / 2;
+      
+      return `
+        <path d="M ${from.x} ${from.y} Q ${midX} ${from.y} ${midX} ${midY} Q ${midX} ${to.y} ${to.x} ${to.y}" 
+              fill="none" stroke="#cbd5e1" stroke-width="2"/>
+      `;
+    }
+
+    function handleWheel(e) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? 0.9 : 1.1;
+      zoomMindmap(delta, e.offsetX, e.offsetY);
+    }
+
+    function handleMouseDown(e) {
+      state.isDragging = true;
+      state.dragStartX = e.clientX;
+      state.dragStartY = e.clientY;
+    }
+
+    function handleMouseMove(e) {
+      if (!state.isDragging) return;
+      
+      const dx = e.clientX - state.dragStartX;
+      const dy = e.clientY - state.dragStartY;
+      
+      state.mindmapTranslateX += dx;
+      state.mindmapTranslateY += dy;
+      
+      state.dragStartX = e.clientX;
+      state.dragStartY = e.clientY;
+      
+      updateMindmapTransform();
+    }
+
+    function handleMouseUp() {
+      state.isDragging = false;
+    }
+
+    function zoomMindmap(factor, centerX, centerY) {
+      const svg = document.getElementById('mindmap-svg');
+      const rect = svg.getBoundingClientRect();
+      
+      const cx = centerX !== undefined ? centerX : rect.width / 2;
+      const cy = centerY !== undefined ? centerY : rect.height / 2;
+      
+      const oldScale = state.mindmapScale;
+      const newScale = Math.max(0.2, Math.min(3, state.mindmapScale * factor));
+      
+      const scaleChange = newScale - oldScale;
+      state.mindmapTranslateX -= scaleChange * (cx - rect.width / 2 - state.mindmapTranslateX) / oldScale;
+      state.mindmapTranslateY -= scaleChange * (cy - rect.height / 2 - state.mindmapTranslateY) / oldScale;
+      
+      state.mindmapScale = newScale;
+      updateMindmapTransform();
+    }
+
+    function resetMindmap() {
+      state.mindmapScale = 1;
+      state.mindmapTranslateX = 0;
+      state.mindmapTranslateY = 0;
+      updateMindmapTransform();
+    }
+
+    function updateMindmapTransform() {
+      const group = document.getElementById('mindmap-group');
+      const svg = document.getElementById('mindmap-svg');
+      const rect = svg.getBoundingClientRect();
+      
+      const centerX = rect.width / 2 + state.mindmapTranslateX;
+      const centerY = rect.height / 2 + state.mindmapTranslateY;
+      
+      group.setAttribute('transform', 
+        `translate(${centerX}, ${centerY}) scale(${state.mindmapScale})`);
+    }
+
+    function toggleFullscreen() {
+      const container = document.getElementById('mindmap-container');
+      const section = container.closest('.mindmap-section');
+      
+      section.classList.toggle('fullscreen-mode');
+      
+      const btn = document.getElementById('toggle-fullscreen');
+      if (section.classList.contains('fullscreen-mode')) {
+        btn.innerHTML = '<span>✕</span> 退出全屏';
+      } else {
+        btn.innerHTML = '<span>⛶</span> 全屏模式';
+      }
+      
+      setTimeout(() => {
+        updateMindmapTransform();
+      }, 100);
+    }
+
+    function saveToHistory(text, data) {
+      const item = {
+        id: Date.now(),
+        title: text.substring(0, 50) + '...',
+        preview: text.substring(0, 150),
+        text,
+        data,
+        timestamp: new Date().toISOString()
+      };
+
+      state.history.unshift(item);
+      
+      if (state.history.length > 20) {
+        state.history = state.history.slice(0, 20);
+      }
+
+      localStorage.setItem('paperlab_history', JSON.stringify(state.history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const container = document.getElementById('history-list');
+      
+      if (state.history.length === 0) {
+        container.innerHTML = '<div class="empty-history">暂无历史记录</div>';
+        return;
+      }
+
+      container.innerHTML = state.history.map(item => `
+        <div class="history-item" data-id="${item.id}">
+          <div class="history-item-content">
+            <div class="history-item-title">${item.title}</div>
+            <div class="history-item-preview">${item.preview}</div>
+          </div>
+          <div style="display: flex; align-items: center;">
+            <div class="history-item-time">${formatTime(item.timestamp)}</div>
+            <button class="history-item-delete" onclick="event.stopPropagation(); deleteHistoryItem(${item.id})">删除</button>
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          if (e.target.classList.contains('history-item-delete')) return;
+          loadHistoryItem(parseInt(item.dataset.id));
+        });
+      });
+    }
+
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return '刚刚';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`;
+      if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`;
+      if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`;
+      
+      return date.toLocaleDateString('zh-CN');
+    }
+
+    function loadHistoryItem(id) {
+      const item = state.history.find(h => h.id === id);
+      if (!item) return;
+
+      document.getElementById('experiment-text').value = item.text;
+      updateCharCount();
+      state.parsedData = item.data;
+      renderResults();
+      showToast('已加载历史记录');
+      
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function deleteHistoryItem(id) {
+      state.history = state.history.filter(h => h.id !== id);
+      localStorage.setItem('paperlab_history', JSON.stringify(state.history));
+      renderHistory();
+      showToast('已删除');
+    }
+
+    function clearAllHistory() {
+      state.history = [];
+      localStorage.removeItem('paperlab_history');
+      renderHistory();
+      showToast('已清空全部历史记录');
+    }
+
+    function copyContent(type) {
+      let text = '';
+      switch(type) {
+        case 'story':
+          text = state.parsedData?.storyInterpretation || '';
+          break;
+      }
+      copyToClipboard(text);
+    }
+
+    function copyAllContent() {
+      if (!state.parsedData) {
+        showToast('没有可复制的内容', 'error');
+        return;
+      }
+
+      const data = state.parsedData;
+      const text = `
+【研究目的】
+${data.researchPurpose?.content || '无'}
+
+【实验假设】
+${data.hypothesis?.content || '无'}
+
+【实验设计】
+类型：${data.experimentDesign?.type || '无'}
+描述：${data.experimentDesign?.description || '无'}
+
+【材料与方法】
+实验对象：${data.materialsMethods?.subjects || '无'}
+实验材料：${data.materialsMethods?.materials || '无'}
+流程步骤：${data.materialsMethods?.procedure || '无'}
+关键技术：${data.materialsMethods?.techniques || '无'}
+
+【关键变量】
+自变量：${(data.keyVariables?.independent || []).join('、') || '无'}
+因变量：${(data.keyVariables?.dependent || []).join('、') || '无'}
+控制变量：${(data.keyVariables?.control || []).join('、') || '无'}
+
+【实验结果】
+主要发现：${data.results?.mainFindings || '无'}
+数据要点：${data.results?.dataPoints || '无'}
+
+【核心结论】
+${data.conclusion?.content || '无'}
+
+【局限性】
+${data.limitations?.content || '无'}
+
+【阅读建议】
+${data.readingTips?.content || '无'}
+
+【故事化解读】
+${data.storyInterpretation || '无'}
+
+【专业术语】
+${(data.keyTerms || []).map(t => `- ${t.term}：${t.explanation}`).join('\n') || '无'}
+`.trim();
+
+      copyToClipboard(text);
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制到剪贴板');
+      }).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast('已复制到剪贴板');
+      });
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.style.background = type === 'error' ? 'var(--danger-color)' : 'var(--success-color)';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
