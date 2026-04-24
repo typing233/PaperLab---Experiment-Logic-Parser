@@ -535,6 +535,50 @@
       stroke: #cbd5e1;
     }
 
+    .mindmap-node.dragging {
+      opacity: 0.8;
+    }
+
+    .mindmap-node.dragging .node-rect {
+      stroke-width: 3;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+    }
+
+    .node-tooltip {
+      position: absolute;
+      background: rgba(30, 41, 59, 0.95);
+      color: white;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      max-width: 300px;
+      z-index: 1000;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      word-wrap: break-word;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .node-tooltip.show {
+      opacity: 1;
+    }
+
+    .node-tooltip::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid rgba(30, 41, 59, 0.95);
+    }
+
+    .dragging-cursor {
+      cursor: grabbing !important;
+    }
+
     .fullscreen-mode {
       position: fixed;
       top: 0;
@@ -901,7 +945,15 @@
           </div>
           <div class="mindmap-container" id="mindmap-container">
             <svg class="mindmap-svg" id="mindmap-svg">
-              <g id="mindmap-group">
+              <defs>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+                        refX="9" refY="3.5" orient="auto">
+                  <polygon points="0 0, 10 3.5, 0 7" fill="#cbd5e1"/>
+                </marker>
+              </defs>
+              <g id="mindmap-links">
+              </g>
+              <g id="mindmap-nodes">
               </g>
             </svg>
             <div class="zoom-controls">
@@ -909,6 +961,7 @@
               <button class="zoom-btn" id="zoom-reset">⌂</button>
               <button class="zoom-btn" id="zoom-out">−</button>
             </div>
+            <div class="node-tooltip" id="node-tooltip"></div>
           </div>
         </div>
       </div>
@@ -954,7 +1007,12 @@
       mindmapTranslateY: 0,
       isDragging: false,
       dragStartX: 0,
-      dragStartY: 0
+      dragStartY: 0,
+      isNodeDragging: false,
+      draggedNodeId: null,
+      mindmapNodes: [],
+      mindmapLinks: [],
+      originalPositions: {}
     };
 
     const moduleIcons = {
@@ -1266,100 +1324,143 @@
 
     function initMindmap() {
       const svg = document.getElementById('mindmap-svg');
-      const group = document.getElementById('mindmap-group');
-
+      
       svg.addEventListener('wheel', handleWheel);
-      svg.addEventListener('mousedown', handleMouseDown);
-      svg.addEventListener('mousemove', handleMouseMove);
-      svg.addEventListener('mouseup', handleMouseUp);
-      svg.addEventListener('mouseleave', handleMouseUp);
+      svg.addEventListener('mousedown', handleMindmapMouseDown);
+      svg.addEventListener('mousemove', handleMindmapMouseMove);
+      svg.addEventListener('mouseup', handleMindmapMouseUp);
+      svg.addEventListener('mouseleave', handleMindmapMouseUp);
     }
 
     function renderMindmap() {
-      const group = document.getElementById('mindmap-group');
+      const nodesGroup = document.getElementById('mindmap-nodes');
+      const linksGroup = document.getElementById('mindmap-links');
       const data = state.parsedData;
       
-      group.innerHTML = '';
+      nodesGroup.innerHTML = '';
+      linksGroup.innerHTML = '';
 
-      const nodes = [];
-      const links = [];
+      state.mindmapNodes = [];
+      state.mindmapLinks = [];
+      state.originalPositions = {};
 
-      const centerText = truncateText(data?.researchPurpose?.content || '实验研究', 15);
       const centerNode = {
         id: 'center',
-        text: centerText,
+        text: '研究目的',
+        fullText: data?.researchPurpose?.content || '实验研究目的',
         x: 0,
         y: 0,
         class: 'center-node',
-        width: 160,
-        height: 50
+        width: 140,
+        height: 50,
+        level: 0
       };
-      nodes.push(centerNode);
+      state.mindmapNodes.push(centerNode);
 
       const modules = [
-        { key: 'hypothesis', title: '实验假设', data: data?.hypothesis, branch: 'branch-1' },
-        { key: 'experimentDesign', title: '实验设计', data: data?.experimentDesign, branch: 'branch-2' },
-        { key: 'materialsMethods', title: '材料与方法', data: data?.materialsMethods, branch: 'branch-3' },
-        { key: 'keyVariables', title: '关键变量', data: data?.keyVariables, branch: 'branch-4' },
-        { key: 'results', title: '实验结果', data: data?.results, branch: 'branch-1' },
-        { key: 'conclusion', title: '核心结论', data: data?.conclusion, branch: 'branch-2' },
-        { key: 'limitations', title: '局限性', data: data?.limitations, branch: 'branch-3' },
-        { key: 'readingTips', title: '阅读建议', data: data?.readingTips, branch: 'branch-4' }
+        { key: 'hypothesis', title: '实验假设', data: data?.hypothesis, icon: '💡' },
+        { key: 'experimentDesign', title: '实验设计', data: data?.experimentDesign, icon: '📐' },
+        { key: 'materialsMethods', title: '材料与方法', data: data?.materialsMethods, icon: '🔬' },
+        { key: 'keyVariables', title: '关键变量', data: data?.keyVariables, icon: '⚖️' },
+        { key: 'results', title: '实验结果', data: data?.results, icon: '📊' },
+        { key: 'conclusion', title: '核心结论', data: data?.conclusion, icon: '🏆' },
+        { key: 'limitations', title: '局限性', data: data?.limitations, icon: '⚠️' },
+        { key: 'readingTips', title: '阅读建议', data: data?.readingTips, icon: '💡' }
       ];
 
-      const radius = 180;
-      const subRadius = 100;
+      const leftModules = modules.slice(0, 4);
+      const rightModules = modules.slice(4, 8);
 
-      modules.forEach((module, index) => {
-        const angle = (index / modules.length) * 2 * Math.PI - Math.PI / 2;
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
+      layoutNodesHierarchical(leftModules, centerNode, 'left');
+      layoutNodesHierarchical(rightModules, centerNode, 'right');
 
-        const moduleText = truncateText(getModuleText(module.data, module.key), 10);
-        
-        const moduleNode = {
-          id: `module-${index}`,
-          text: module.title,
-          x,
-          y,
-          class: module.branch,
-          width: 120,
-          height: 40
-        };
-        nodes.push(moduleNode);
-
-        links.push({ from: centerNode, to: moduleNode });
-
-        const subItems = getSubItems(module.data, module.key);
-        subItems.forEach((item, subIndex) => {
-          const subAngle = angle + (subIndex - subItems.length / 2 + 0.5) * 0.3;
-          const subX = x + Math.cos(subAngle) * subRadius;
-          const subY = y + Math.sin(subAngle) * subRadius;
-
-          const subNode = {
-            id: `module-${index}-sub-${subIndex}`,
-            text: truncateText(item, 8),
-            x: subX,
-            y: subY,
-            class: 'sub-branch',
-            width: 100,
-            height: 35
-          };
-          nodes.push(subNode);
-          links.push({ from: moduleNode, to: subNode });
-        });
+      state.mindmapNodes.forEach(node => {
+        state.originalPositions[node.id] = { x: node.x, y: node.y };
       });
 
-      links.forEach(link => {
-        const path = createLinkPath(link);
-        group.innerHTML += path;
+      state.mindmapLinks.forEach(link => {
+        linksGroup.innerHTML += createLinkPath(link);
       });
 
-      nodes.forEach(node => {
-        group.innerHTML += createNode(node);
+      state.mindmapNodes.forEach(node => {
+        nodesGroup.innerHTML += createNode(node);
       });
+
+      bindNodeEvents();
 
       resetMindmap();
+    }
+
+    function layoutNodesHierarchical(modules, centerNode, side) {
+      const direction = side === 'left' ? -1 : 1;
+      const level1X = direction * 220;
+      const level2X = direction * 400;
+      const nodeHeight = 70;
+      const subNodeHeight = 55;
+
+      modules.forEach((module, index) => {
+        const startY = -(modules.length - 1) * nodeHeight / 2;
+        const y = startY + index * nodeHeight;
+
+        const moduleFullText = getModuleFullText(module.data, module.key);
+        
+        const moduleNode = {
+          id: `module-${module.key}`,
+          text: module.title,
+          fullText: moduleFullText,
+          x: level1X,
+          y: y,
+          class: `branch-${(index % 4) + 1}`,
+          width: 130,
+          height: 45,
+          level: 1
+        };
+        state.mindmapNodes.push(moduleNode);
+        state.mindmapLinks.push({ from: centerNode, to: moduleNode });
+
+        const subItems = getSubItems(module.data, module.key);
+        if (subItems.length > 0) {
+          const subStartY = y - (subItems.length - 1) * subNodeHeight / 2;
+          subItems.forEach((item, subIndex) => {
+            const subY = subStartY + subIndex * subNodeHeight;
+            const subNode = {
+              id: `module-${module.key}-sub-${subIndex}`,
+              text: truncateText(item, 8),
+              fullText: item,
+              x: level2X,
+              y: subY,
+              class: 'sub-branch',
+              width: 100,
+              height: 35,
+              level: 2,
+              parentId: moduleNode.id
+            };
+            state.mindmapNodes.push(subNode);
+            state.mindmapLinks.push({ from: moduleNode, to: subNode });
+          });
+        }
+      });
+    }
+
+    function getModuleFullText(data, key) {
+      if (!data) return '无数据';
+      switch(key) {
+        case 'hypothesis':
+        case 'conclusion':
+        case 'limitations':
+        case 'readingTips':
+          return data.content || '无数据';
+        case 'experimentDesign':
+          return `类型: ${data.type || '无'}\n描述: ${data.description || '无'}`;
+        case 'materialsMethods':
+          return `对象: ${data.subjects || '无'}\n材料: ${data.materials || '无'}\n步骤: ${data.procedure || '无'}\n技术: ${data.techniques || '无'}`;
+        case 'keyVariables':
+          return `自变量: ${(data.independent || ['无']).join('、')}\n因变量: ${(data.dependent || ['无']).join('、')}\n控制变量: ${(data.control || ['无']).join('、')}`;
+        case 'results':
+          return `主要发现: ${data.mainFindings || '无'}\n数据要点: ${data.dataPoints || '无'}`;
+        default:
+          return '无数据';
+      }
     }
 
     function getModuleText(data, key) {
@@ -1388,15 +1489,15 @@
       switch(key) {
         case 'materialsMethods':
           return [
-            data.subjects ? '对象' : '',
-            data.materials ? '材料' : '',
-            data.procedure ? '步骤' : '',
-            data.techniques ? '技术' : ''
+            data.subjects ? '实验对象' : '',
+            data.materials ? '实验材料' : '',
+            data.procedure ? '流程步骤' : '',
+            data.techniques ? '关键技术' : ''
           ].filter(Boolean);
         case 'keyVariables':
           return ['自变量', '因变量', '控制变量'];
         case 'experimentDesign':
-          return [data.type, data.description].filter(Boolean);
+          return [data.type ? '设计类型' : '', data.description ? '描述' : ''].filter(Boolean);
         case 'results':
           return ['主要发现', '数据要点'];
         default:
@@ -1411,24 +1512,121 @@
     }
 
     function createNode(node) {
-      const { x, y, width, height, text, class: cls } = node;
+      const { x, y, width, height, text, class: cls, id } = node;
+      const textLines = wrapText(text, width - 16);
+      const lineHeight = 14;
+      const totalTextHeight = textLines.length * lineHeight;
+      const startY = (height - totalTextHeight) / 2 + lineHeight / 2;
+      
+      let textElements = '';
+      textLines.forEach((line, i) => {
+        textElements += `<tspan x="${width/2}" y="${startY + i * lineHeight}">${line}</tspan>`;
+      });
+
       return `
-        <g class="mindmap-node ${cls}" transform="translate(${x - width/2}, ${y - height/2})">
-          <rect class="node-rect" width="${width}" height="${height}" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
-          <text class="node-text" x="${width/2}" y="${height/2 + 4}" text-anchor="middle" dominant-baseline="middle">${text}</text>
+        <g class="mindmap-node ${cls}" data-node-id="${id}" transform="translate(${x - width/2}, ${y - height/2})">
+          <rect class="node-rect" width="${width}" height="${height}" rx="8" stroke-width="2"/>
+          <text class="node-text" x="${width/2}" y="${height/2}" text-anchor="middle" dominant-baseline="middle">${textElements}</text>
         </g>
       `;
     }
 
+    function wrapText(text, maxWidth) {
+      if (!text) return ['无数据'];
+      const chars = text.split('');
+      const lines = [];
+      let currentLine = '';
+      
+      chars.forEach(char => {
+        const testLine = currentLine + char;
+        const estimatedWidth = testLine.length * 12;
+        
+        if (estimatedWidth > maxWidth && currentLine.length > 0) {
+          lines.push(currentLine);
+          currentLine = char;
+        } else {
+          currentLine = testLine;
+        }
+      });
+      
+      if (currentLine.length > 0) {
+        lines.push(currentLine);
+      }
+      
+      return lines.length > 0 ? lines : ['无数据'];
+    }
+
     function createLinkPath(link) {
       const { from, to } = link;
-      const midX = (from.x + to.x) / 2;
-      const midY = (from.y + to.y) / 2;
+      
+      const fromX = from.x;
+      const fromY = from.y;
+      const toX = to.x;
+      const toY = to.y;
+      
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      
+      const controlX1 = fromX + dx * 0.4;
+      const controlY1 = fromY;
+      const controlX2 = fromX + dx * 0.6;
+      const controlY2 = toY;
+      
+      const startX = fromX + (dx > 0 ? from.width/2 : -from.width/2);
+      const endX = toX + (dx > 0 ? -to.width/2 : to.width/2);
       
       return `
-        <path d="M ${from.x} ${from.y} Q ${midX} ${from.y} ${midX} ${midY} Q ${midX} ${to.y} ${to.x} ${to.y}" 
-              fill="none" stroke="#cbd5e1" stroke-width="2"/>
+        <path d="M ${startX} ${fromY} C ${controlX1 + (dx > 0 ? from.width/2 : -from.width/2)} ${fromY}, 
+                  ${controlX2 + (dx > 0 ? -to.width/2 : to.width/2)} ${toY}, 
+                  ${endX} ${toY}" 
+              fill="none" stroke="#cbd5e1" stroke-width="2" data-link-from="${from.id}" data-link-to="${to.id}"/>
       `;
+    }
+
+    function bindNodeEvents() {
+      const nodesGroup = document.getElementById('mindmap-nodes');
+      const tooltip = document.getElementById('node-tooltip');
+      const container = document.getElementById('mindmap-container');
+      
+      nodesGroup.querySelectorAll('.mindmap-node').forEach(nodeEl => {
+        const nodeId = nodeEl.getAttribute('data-node-id');
+        const node = state.mindmapNodes.find(n => n.id === nodeId);
+        
+        if (!node) return;
+
+        nodeEl.addEventListener('mouseenter', (e) => {
+          if (state.isNodeDragging) return;
+          
+          const containerRect = container.getBoundingClientRect();
+          const svg = document.getElementById('mindmap-svg');
+          const svgRect = svg.getBoundingClientRect();
+          
+          const mouseX = e.clientX - svgRect.left;
+          const mouseY = e.clientY - svgRect.top;
+          
+          tooltip.textContent = node.fullText || node.text;
+          tooltip.style.left = `${mouseX}px`;
+          tooltip.style.top = `${mouseY - 50}px`;
+          tooltip.classList.add('show');
+        });
+
+        nodeEl.addEventListener('mouseleave', () => {
+          tooltip.classList.remove('show');
+        });
+
+        nodeEl.addEventListener('mousedown', (e) => {
+          if (node.level === 0) return;
+          
+          e.stopPropagation();
+          state.isNodeDragging = true;
+          state.draggedNodeId = nodeId;
+          state.dragStartX = e.clientX;
+          state.dragStartY = e.clientY;
+          
+          nodeEl.classList.add('dragging');
+          document.body.classList.add('dragging-cursor');
+        });
+      });
     }
 
     function handleWheel(e) {
@@ -1437,29 +1635,116 @@
       zoomMindmap(delta, e.offsetX, e.offsetY);
     }
 
-    function handleMouseDown(e) {
+    function handleMindmapMouseDown(e) {
+      if (e.target.closest('.mindmap-node')) return;
+      
       state.isDragging = true;
       state.dragStartX = e.clientX;
       state.dragStartY = e.clientY;
     }
 
-    function handleMouseMove(e) {
-      if (!state.isDragging) return;
+    function handleMindmapMouseMove(e) {
+      const tooltip = document.getElementById('node-tooltip');
+      const container = document.getElementById('mindmap-container');
+      const svg = document.getElementById('mindmap-svg');
+      const svgRect = svg.getBoundingClientRect();
       
-      const dx = e.clientX - state.dragStartX;
-      const dy = e.clientY - state.dragStartY;
+      if (state.isNodeDragging && state.draggedNodeId) {
+        const dx = (e.clientX - state.dragStartX) / state.mindmapScale;
+        const dy = (e.clientY - state.dragStartY) / state.mindmapScale;
+        
+        const node = state.mindmapNodes.find(n => n.id === state.draggedNodeId);
+        if (node) {
+          node.x += dx;
+          node.y += dy;
+          
+          const nodeEl = document.querySelector(`[data-node-id="${state.draggedNodeId}"]`);
+          if (nodeEl) {
+            nodeEl.setAttribute('transform', `translate(${node.x - node.width/2}, ${node.y - node.height/2})`);
+          }
+          
+          updateConnectedLinks(state.draggedNodeId);
+        }
+        
+        state.dragStartX = e.clientX;
+        state.dragStartY = e.clientY;
+        
+        const mouseX = e.clientX - svgRect.left;
+        const mouseY = e.clientY - svgRect.top;
+        tooltip.style.left = `${mouseX}px`;
+        tooltip.style.top = `${mouseY - 50}px`;
+        
+        return;
+      }
       
-      state.mindmapTranslateX += dx;
-      state.mindmapTranslateY += dy;
-      
-      state.dragStartX = e.clientX;
-      state.dragStartY = e.clientY;
-      
-      updateMindmapTransform();
+      if (state.isDragging) {
+        const dx = e.clientX - state.dragStartX;
+        const dy = e.clientY - state.dragStartY;
+        
+        state.mindmapTranslateX += dx;
+        state.mindmapTranslateY += dy;
+        
+        state.dragStartX = e.clientX;
+        state.dragStartY = e.clientY;
+        
+        updateMindmapTransform();
+      }
     }
 
-    function handleMouseUp() {
+    function handleMindmapMouseUp() {
+      if (state.isNodeDragging && state.draggedNodeId) {
+        const nodeEl = document.querySelector(`[data-node-id="${state.draggedNodeId}"]`);
+        if (nodeEl) {
+          nodeEl.classList.remove('dragging');
+        }
+        document.body.classList.remove('dragging-cursor');
+      }
+      
       state.isDragging = false;
+      state.isNodeDragging = false;
+      state.draggedNodeId = null;
+      
+      const tooltip = document.getElementById('node-tooltip');
+      if (tooltip) {
+        tooltip.classList.remove('show');
+      }
+    }
+
+    function updateConnectedLinks(nodeId) {
+      const node = state.mindmapNodes.find(n => n.id === nodeId);
+      if (!node) return;
+
+      const linksGroup = document.getElementById('mindmap-links');
+      
+      state.mindmapLinks.forEach(link => {
+        if (link.from.id === nodeId || link.to.id === nodeId) {
+          const pathEl = linksGroup.querySelector(`[data-link-from="${link.from.id}"][data-link-to="${link.to.id}"]`);
+          if (pathEl) {
+            const newPath = createLinkPathData(link.from, link.to);
+            pathEl.setAttribute('d', newPath);
+          }
+        }
+      });
+    }
+
+    function createLinkPathData(from, to) {
+      const fromX = from.x;
+      const fromY = from.y;
+      const toX = to.x;
+      const toY = to.y;
+      
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      
+      const controlX1 = fromX + dx * 0.4;
+      const controlY1 = fromY;
+      const controlX2 = fromX + dx * 0.6;
+      const controlY2 = toY;
+      
+      const startX = fromX + (dx > 0 ? from.width/2 : -from.width/2);
+      const endX = toX + (dx > 0 ? -to.width/2 : to.width/2);
+      
+      return `M ${startX} ${fromY} C ${controlX1 + (dx > 0 ? from.width/2 : -from.width/2)} ${fromY}, ${controlX2 + (dx > 0 ? -to.width/2 : to.width/2)} ${toY}, ${endX} ${toY}`;
     }
 
     function zoomMindmap(factor, centerX, centerY) {
@@ -1484,19 +1769,44 @@
       state.mindmapScale = 1;
       state.mindmapTranslateX = 0;
       state.mindmapTranslateY = 0;
+      
+      state.mindmapNodes.forEach(node => {
+        if (state.originalPositions[node.id]) {
+          node.x = state.originalPositions[node.id].x;
+          node.y = state.originalPositions[node.id].y;
+          
+          const nodeEl = document.querySelector(`[data-node-id="${node.id}"]`);
+          if (nodeEl) {
+            nodeEl.setAttribute('transform', `translate(${node.x - node.width/2}, ${node.y - node.height/2})`);
+          }
+        }
+      });
+      
+      state.mindmapLinks.forEach(link => {
+        const linksGroup = document.getElementById('mindmap-links');
+        const pathEl = linksGroup.querySelector(`[data-link-from="${link.from.id}"][data-link-to="${link.to.id}"]`);
+        if (pathEl) {
+          const newPath = createLinkPathData(link.from, link.to);
+          pathEl.setAttribute('d', newPath);
+        }
+      });
+      
       updateMindmapTransform();
     }
 
     function updateMindmapTransform() {
-      const group = document.getElementById('mindmap-group');
+      const nodesGroup = document.getElementById('mindmap-nodes');
+      const linksGroup = document.getElementById('mindmap-links');
       const svg = document.getElementById('mindmap-svg');
       const rect = svg.getBoundingClientRect();
       
       const centerX = rect.width / 2 + state.mindmapTranslateX;
       const centerY = rect.height / 2 + state.mindmapTranslateY;
       
-      group.setAttribute('transform', 
-        `translate(${centerX}, ${centerY}) scale(${state.mindmapScale})`);
+      const transform = `translate(${centerX}, ${centerY}) scale(${state.mindmapScale})`;
+      
+      nodesGroup.setAttribute('transform', transform);
+      linksGroup.setAttribute('transform', transform);
     }
 
     function toggleFullscreen() {
