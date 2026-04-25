@@ -7,12 +7,19 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["ai", "academic-reading", "mind-map", "deepseek"],
+  "keywords": [
+    "ai",
+    "academic-reading",
+    "mind-map",
+    "deepseek"
+  ],
   "author": "PaperLab",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
+    "axios": "^1.6.0",
     "cors": "^2.8.5",
-    "axios": "^1.6.0"
+    "express": "^4.18.2",
+    "multer": "^2.1.1",
+    "pdf-parse": "^1.1.1"
   }
 }

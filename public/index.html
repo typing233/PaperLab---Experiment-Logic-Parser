@@ -81,10 +81,12 @@
     .api-key-input {
       display: flex;
       gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .api-key-input input {
       flex: 1;
+      min-width: 200px;
       padding: 0.75rem 1rem;
       border: 2px solid var(--border-color);
       border-radius: 8px;
@@ -108,10 +110,42 @@
       font-size: 0.95rem;
       cursor: pointer;
       transition: all 0.3s ease;
+      white-space: nowrap;
     }
 
     .api-key-input button:hover {
       background: var(--primary-dark);
+    }
+
+    .input-mode-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .mode-tab {
+      padding: 0.75rem 1.25rem;
+      background: var(--card-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .mode-tab:hover {
+      border-color: var(--primary-color);
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      color: white;
+      border-color: transparent;
     }
 
     .input-section {
@@ -127,6 +161,17 @@
       font-size: 1.1rem;
       margin-bottom: 1rem;
       color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .input-section h3 .badge {
+      font-size: 0.75rem;
+      background: var(--warning-color);
+      color: white;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
     }
 
     .textarea-wrapper {
@@ -135,7 +180,7 @@
 
     .textarea-wrapper textarea {
       width: 100%;
-      min-height: 200px;
+      min-height: 250px;
       padding: 1rem;
       border: 2px solid var(--border-color);
       border-radius: 8px;
@@ -157,6 +202,131 @@
       right: 0.75rem;
       font-size: 0.8rem;
       color: var(--text-secondary);
+    }
+
+    .upload-area {
+      border: 2px dashed var(--border-color);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .upload-area:hover,
+    .upload-area.dragover {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .upload-area input[type="file"] {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .upload-text {
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-hint {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--bg-color);
+      border-radius: 8px;
+    }
+
+    .file-info .file-icon {
+      font-size: 2rem;
+    }
+
+    .file-info .file-details {
+      flex: 1;
+    }
+
+    .file-info .file-name {
+      font-weight: 600;
+    }
+
+    .file-info .file-size {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .multi-paper-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .paper-item {
+      background: var(--bg-color);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .paper-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .paper-item-title {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .paper-item-remove {
+      background: #fef2f2;
+      color: var(--danger-color);
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    .paper-item textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      resize: vertical;
+    }
+
+    .add-paper-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .add-paper-btn:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
     }
 
     .action-buttons {
@@ -204,6 +374,15 @@
     .btn-secondary:hover {
       border-color: var(--primary-color);
       background: rgba(59, 130, 246, 0.05);
+    }
+
+    .btn-success {
+      background: var(--success-color);
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
     }
 
     .tabs {
@@ -376,6 +555,469 @@
       content: '• ';
       color: var(--primary-color);
       font-weight: bold;
+    }
+
+    .checklist-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .checklist-item:hover {
+      background: var(--bg-color);
+    }
+
+    .checklist-item.checked {
+      opacity: 0.6;
+    }
+
+    .checklist-item.checked .checklist-text {
+      text-decoration: line-through;
+    }
+
+    .checklist-checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--border-color);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .checklist-item.checked .checklist-checkbox {
+      background: var(--success-color);
+      border-color: var(--success-color);
+    }
+
+    .checklist-checkbox::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .checklist-item.checked .checklist-checkbox::after {
+      opacity: 1;
+    }
+
+    .checklist-content {
+      flex: 1;
+    }
+
+    .checklist-text {
+      font-weight: 500;
+    }
+
+    .checklist-notes {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .checklist-badge {
+      font-size: 0.75rem;
+      padding: 0.1rem 0.5rem;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .badge-high {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .badge-medium {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .badge-low {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .code-block {
+      background: #1e293b;
+      border-radius: 8px;
+      padding: 1rem;
+      overflow-x: auto;
+      margin: 0.5rem 0;
+    }
+
+    .code-block pre {
+      margin: 0;
+      color: #e2e8f0;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .code-title {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .code-lang {
+      font-size: 0.75rem;
+      background: var(--secondary-color);
+      color: white;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .risk-card {
+      border-left: 4px solid;
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 1rem;
+      background: var(--bg-color);
+    }
+
+    .risk-card.severity-high {
+      border-color: var(--danger-color);
+      background: #fef2f2;
+    }
+
+    .risk-card.severity-medium {
+      border-color: var(--warning-color);
+      background: #fffbeb;
+    }
+
+    .risk-card.severity-low {
+      border-color: var(--primary-color);
+      background: #eff6ff;
+    }
+
+    .risk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .risk-type {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .risk-description {
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .risk-mitigation {
+      font-size: 0.85rem;
+      color: var(--success-color);
+      font-weight: 500;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 1rem;
+      border: 1px solid var(--border-color);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .comparison-table th {
+      background: var(--bg-color);
+      font-weight: 600;
+      color: var(--text-primary);
+      position: sticky;
+      top: 0;
+    }
+
+    .comparison-table .var-name {
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .comparison-table .var-note {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .similar-point {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .different-point {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .point-label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .point-label.similar {
+      color: #166534;
+    }
+
+    .point-label.different {
+      color: #991b1b;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 2rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.5rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--border-color);
+    }
+
+    .timeline-item {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: -1.75rem;
+      top: 0.25rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--primary-color);
+    }
+
+    .timeline-paper {
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-method {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .timeline-details {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .evaluation-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+    }
+
+    .evaluation-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+
+    .strengths-list,
+    .weaknesses-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .strengths-list li,
+    .weaknesses-list li {
+      padding: 0.5rem 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .strengths-list li::before {
+      content: '✓';
+      color: var(--success-color);
+      font-weight: bold;
+    }
+
+    .weaknesses-list li::before {
+      content: '✗';
+      color: var(--danger-color);
+      font-weight: bold;
+    }
+
+    .evidence-chain {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .evidence-level {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      border: 2px solid var(--border-color);
+    }
+
+    .evidence-level.level-methods {
+      border-color: var(--primary-color);
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    }
+
+    .evidence-level.level-data {
+      border-color: var(--secondary-color);
+      background: linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%);
+    }
+
+    .evidence-level.level-conclusions {
+      border-color: var(--success-color);
+      background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    }
+
+    .evidence-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .evidence-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .level-methods .evidence-icon {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .level-data .evidence-icon {
+      background: #ddd6fe;
+      color: #7c3aed;
+    }
+
+    .level-conclusions .evidence-icon {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .evidence-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .evidence-item {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .evidence-item-name {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .evidence-item-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .evidence-item-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .link-pill {
+      background: var(--bg-color);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+
+    .link-pill.data-link {
+      background: #f5f3ff;
+      color: #7c3aed;
+    }
+
+    .link-pill.method-link {
+      background: #dbeafe;
+      color: #2563eb;
+    }
+
+    .link-pill.conclusion-link {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .stats-card {
+      background: white;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border-left: 4px solid var(--warning-color);
+    }
+
+    .stats-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .stats-value {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .stats-conclusion {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
     }
 
     .mindmap-section {
@@ -805,6 +1447,51 @@
       color: #991b1b;
     }
 
+    .mode-content {
+      display: none;
+    }
+
+    .mode-content.active {
+      display: block;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-color);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .section-divider span {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
     @media (max-width: 768px) {
       .header h1 {
         font-size: 1.5rem;
@@ -828,6 +1515,15 @@
 
       .mindmap-container {
         height: 400px;
+      }
+
+      .input-mode-tabs {
+        flex-direction: column;
+      }
+
+      .mode-tab {
+        width: 100%;
+        justify-content: center;
       }
     }
   </style>
@@ -867,35 +1563,113 @@
       </div>
     </div>
 
-    <div class="input-section">
-      <h3>
-        <span>📝</span>
-        输入实验文本
-      </h3>
-      <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
-        请粘贴需要解析的学术实验文本（支持 100-10000 字）
-      </p>
-      <div class="textarea-wrapper">
-        <textarea id="experiment-text" placeholder="请在此粘贴您的学术实验文本...
+    <div class="input-mode-tabs">
+      <button class="mode-tab active" data-mode="single">
+        <span>📄</span>
+        单篇论文解析
+      </button>
+      <button class="mode-tab" data-mode="compare">
+        <span>🔄</span>
+        多论文对比
+      </button>
+    </div>
+
+    <div id="mode-single" class="mode-content active">
+      <div class="input-section">
+        <h3>
+          <span>📝</span>
+          输入实验文本
+          <span class="badge">字数不限</span>
+        </h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          请粘贴需要解析的学术实验文本，支持任意长度
+        </p>
+        <div class="textarea-wrapper">
+          <textarea id="experiment-text" placeholder="请在此粘贴您的学术实验文本...
 
 例如：本研究旨在探讨睡眠剥夺对工作记忆容量的影响及其神经机制。实验采用随机对照设计，共招募60名健康大学生被试，随机分为睡眠剥夺组（30人，连续24小时不睡）和正常睡眠组（30人）。实验材料包括数字广度测验、n-back任务以及功能性磁共振成像扫描。实验流程如下：首先所有被试完成基线测量，包括数字广度测验和情绪量表；随后睡眠剥夺组在实验室中保持清醒24小时，对照组正常睡眠；24小时后，两组被试完成n-back任务（0-back、2-back、3-back条件）的fMRI扫描，同时记录行为数据。数据分析采用独立样本t检验和全脑激活分析..."></textarea>
-        <div class="char-count"><span id="current-chars">0</span> / 10000 字</div>
+          <div class="char-count"><span id="current-chars">0</span> 字</div>
+        </div>
+        
+        <div class="section-divider"><span>或上传PDF文件</span></div>
+        
+        <div class="upload-area" id="pdf-upload-area">
+          <input type="file" id="pdf-input" accept=".pdf">
+          <div class="upload-icon">📎</div>
+          <div class="upload-text">点击或拖拽PDF文件到此处上传</div>
+          <div class="upload-hint">支持 PDF 格式，最大 50MB</div>
+        </div>
+        <div id="file-info-container" style="display: none;"></div>
+        
+        <div class="action-buttons">
+          <button id="parse-btn" class="btn btn-primary">
+            <span>🚀</span>
+            开始解析
+          </button>
+          <button id="generate-plan-btn" class="btn btn-success">
+            <span>📋</span>
+            生成实验方案
+          </button>
+          <button id="extract-data-btn" class="btn btn-secondary">
+            <span>📊</span>
+            提取实验数据
+          </button>
+          <button id="clear-btn" class="btn btn-secondary">
+            <span>🗑️</span>
+            清空
+          </button>
+        </div>
       </div>
-      <div class="action-buttons">
-        <button id="parse-btn" class="btn btn-primary">
-          <span>🚀</span>
-          开始解析
+    </div>
+
+    <div id="mode-compare" class="mode-content">
+      <div class="input-section">
+        <h3>
+          <span>🔄</span>
+          多论文对比分析
+          <span class="badge">2-5篇</span>
+        </h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          同时解析2-5篇论文，生成统一比对面板，自动对齐变量、标记结论异同
+        </p>
+        
+        <div class="multi-paper-container" id="multi-paper-container">
+          <div class="paper-item" data-index="1">
+            <div class="paper-item-header">
+              <span class="paper-item-title">📄 论文 1</span>
+            </div>
+            <textarea placeholder="请粘贴第1篇论文的实验文本内容..."></textarea>
+          </div>
+          <div class="paper-item" data-index="2">
+            <div class="paper-item-header">
+              <span class="paper-item-title">📄 论文 2</span>
+              <button class="paper-item-remove" onclick="removePaper(this)">× 移除</button>
+            </div>
+            <textarea placeholder="请粘贴第2篇论文的实验文本内容..."></textarea>
+          </div>
+        </div>
+        
+        <button class="add-paper-btn" id="add-paper-btn" onclick="addPaper()">
+          <span>➕</span>
+          添加论文（最多5篇）
         </button>
-        <button id="clear-btn" class="btn btn-secondary">
-          <span>🗑️</span>
-          清空文本
-        </button>
+        
+        <div class="action-buttons">
+          <button id="compare-btn" class="btn btn-primary">
+            <span>🔄</span>
+            开始对比分析
+          </button>
+          <button id="clear-compare-btn" class="btn btn-secondary">
+            <span>🗑️</span>
+            清空所有
+          </button>
+        </div>
       </div>
     </div>
 
     <div id="loading" class="loading" style="display: none;">
       <div class="loading-spinner"></div>
-      <p style="color: var(--text-secondary);">AI 正在解析中，请稍候...</p>
+      <p style="color: var(--text-secondary);" id="loading-text">AI 正在解析中，请稍候...</p>
     </div>
 
     <div id="error-message" class="error-message" style="display: none;"></div>
@@ -905,6 +1679,18 @@
         <button class="tab active" data-tab="cards">
           <span>📋</span>
           卡片视图
+        </button>
+        <button class="tab" data-tab="plan">
+          <span>✅</span>
+          实验方案
+        </button>
+        <button class="tab" data-tab="evidence">
+          <span>🔗</span>
+          证据链
+        </button>
+        <button class="tab" data-tab="compare">
+          <span>🔄</span>
+          对比分析
         </button>
         <button class="tab" data-tab="mindmap">
           <span>🧠</span>
@@ -922,6 +1708,21 @@
 
       <div id="tab-cards" class="tab-content active">
         <div class="cards-grid" id="cards-container">
+        </div>
+      </div>
+
+      <div id="tab-plan" class="tab-content">
+        <div class="cards-grid" id="plan-container">
+        </div>
+      </div>
+
+      <div id="tab-evidence" class="tab-content">
+        <div id="evidence-container">
+        </div>
+      </div>
+
+      <div id="tab-compare" class="tab-content">
+        <div id="compare-container">
         </div>
       </div>
 
@@ -1001,6 +1802,9 @@
     const state = {
       apiKey: localStorage.getItem('deepseek_api_key') || '',
       parsedData: null,
+      planData: null,
+      evidenceData: null,
+      compareData: null,
       history: JSON.parse(localStorage.getItem('paperlab_history') || '[]'),
       mindmapScale: 1,
       mindmapTranslateX: 0,
@@ -1012,7 +1816,11 @@
       draggedNodeId: null,
       mindmapNodes: [],
       mindmapLinks: [],
-      originalPositions: {}
+      originalPositions: {},
+      currentMode: 'single',
+      paperCount: 2,
+      uploadedFile: null,
+      checklistState: {}
     };
 
     const moduleIcons = {
@@ -1032,16 +1840,25 @@
       updateApiStatus();
       renderHistory();
       initMindmap();
+      initFileUpload();
     });
 
     function initEventListeners() {
       document.getElementById('save-api-key').addEventListener('click', saveApiKey);
       document.getElementById('clear-api-key').addEventListener('click', clearApiKey);
       document.getElementById('experiment-text').addEventListener('input', updateCharCount);
-      document.getElementById('parse-btn').addEventListener('click', parseText);
-      document.getElementById('clear-btn').addEventListener('click', clearText);
+      document.getElementById('parse-btn').addEventListener('click', () => parseText('parse'));
+      document.getElementById('generate-plan-btn').addEventListener('click', () => parseText('plan'));
+      document.getElementById('extract-data-btn').addEventListener('click', () => parseText('extract'));
+      document.getElementById('clear-btn').addEventListener('click', clearSingleInput);
+      document.getElementById('compare-btn').addEventListener('click', comparePapers);
+      document.getElementById('clear-compare-btn').addEventListener('click', clearCompareInput);
       document.getElementById('clear-history').addEventListener('click', clearAllHistory);
       document.getElementById('copy-all-btn').addEventListener('click', copyAllContent);
+
+      document.querySelectorAll('.mode-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchMode(tab.dataset.mode));
+      });
 
       document.querySelectorAll('.tab').forEach(tab => {
         tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -1056,6 +1873,88 @@
       document.getElementById('zoom-reset').addEventListener('click', resetMindmap);
       document.getElementById('reset-view').addEventListener('click', resetMindmap);
       document.getElementById('toggle-fullscreen').addEventListener('click', toggleFullscreen);
+    }
+
+    function initFileUpload() {
+      const uploadArea = document.getElementById('pdf-upload-area');
+      const pdfInput = document.getElementById('pdf-input');
+
+      uploadArea.addEventListener('click', () => pdfInput.click());
+
+      uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+      });
+
+      uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+      });
+
+      uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && files[0].type === 'application/pdf') {
+          handleFileSelect(files[0]);
+        } else {
+          showToast('请选择有效的PDF文件', 'error');
+        }
+      });
+
+      pdfInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          handleFileSelect(e.target.files[0]);
+        }
+      });
+    }
+
+    function handleFileSelect(file) {
+      if (file.size > 50 * 1024 * 1024) {
+        showToast('文件大小不能超过50MB', 'error');
+        return;
+      }
+
+      state.uploadedFile = file;
+      const container = document.getElementById('file-info-container');
+      container.innerHTML = `
+        <div class="file-info">
+          <div class="file-icon">📄</div>
+          <div class="file-details">
+            <div class="file-name">${file.name}</div>
+            <div class="file-size">${formatFileSize(file.size)}</div>
+          </div>
+          <button class="paper-item-remove" onclick="clearUploadedFile()">移除</button>
+        </div>
+      `;
+      container.style.display = 'block';
+    }
+
+    function clearUploadedFile() {
+      state.uploadedFile = null;
+      document.getElementById('file-info-container').style.display = 'none';
+      document.getElementById('pdf-input').value = '';
+    }
+
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function switchMode(mode) {
+      state.currentMode = mode;
+      
+      document.querySelectorAll('.mode-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.mode === mode);
+      });
+
+      document.querySelectorAll('.mode-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(`mode-${mode}`).classList.add('active');
+
+      hideError();
+      hideLoading();
     }
 
     function updateApiStatus() {
@@ -1095,30 +1994,119 @@
       document.getElementById('current-chars').textContent = text.length;
     }
 
-    function clearText() {
+    function clearSingleInput() {
       document.getElementById('experiment-text').value = '';
+      clearUploadedFile();
       updateCharCount();
     }
 
-    async function parseText() {
-      const text = document.getElementById('experiment-text').value.trim();
+    function clearCompareInput() {
+      const container = document.getElementById('multi-paper-container');
+      container.innerHTML = `
+        <div class="paper-item" data-index="1">
+          <div class="paper-item-header">
+            <span class="paper-item-title">📄 论文 1</span>
+          </div>
+          <textarea placeholder="请粘贴第1篇论文的实验文本内容..."></textarea>
+        </div>
+        <div class="paper-item" data-index="2">
+          <div class="paper-item-header">
+            <span class="paper-item-title">📄 论文 2</span>
+            <button class="paper-item-remove" onclick="removePaper(this)">× 移除</button>
+          </div>
+          <textarea placeholder="请粘贴第2篇论文的实验文本内容..."></textarea>
+        </div>
+      `;
+      state.paperCount = 2;
+      updateAddPaperButton();
+    }
+
+    function addPaper() {
+      if (state.paperCount >= 5) {
+        showToast('最多只能添加5篇论文', 'error');
+        return;
+      }
       
-      if (text.length < 100 || text.length > 10000) {
-        showError('文本长度必须在 100-10000 字之间');
+      state.paperCount++;
+      const container = document.getElementById('multi-paper-container');
+      const newPaper = document.createElement('div');
+      newPaper.className = 'paper-item';
+      newPaper.dataset.index = state.paperCount;
+      newPaper.innerHTML = `
+        <div class="paper-item-header">
+          <span class="paper-item-title">📄 论文 ${state.paperCount}</span>
+          <button class="paper-item-remove" onclick="removePaper(this)">× 移除</button>
+        </div>
+        <textarea placeholder="请粘贴第${state.paperCount}篇论文的实验文本内容..."></textarea>
+      `;
+      container.appendChild(newPaper);
+      updateAddPaperButton();
+    }
+
+    function removePaper(btn) {
+      const paperItem = btn.closest('.paper-item');
+      paperItem.remove();
+      state.paperCount--;
+      
+      const container = document.getElementById('multi-paper-container');
+      const items = container.querySelectorAll('.paper-item');
+      items.forEach((item, index) => {
+        item.dataset.index = index + 1;
+        item.querySelector('.paper-item-title').textContent = `📄 论文 ${index + 1}`;
+        item.querySelector('textarea').placeholder = `请粘贴第${index + 1}篇论文的实验文本内容...`;
+      });
+      
+      updateAddPaperButton();
+    }
+
+    function updateAddPaperButton() {
+      const btn = document.getElementById('add-paper-btn');
+      if (state.paperCount >= 5) {
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+      } else {
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+      }
+    }
+
+    async function parseText(action) {
+      let text = document.getElementById('experiment-text').value.trim();
+      const apiKey = state.apiKey || document.getElementById('api-key-input').value.trim();
+
+      if (!apiKey) {
+        showError('请先配置 DeepSeek API Key');
         return;
       }
 
-      const apiKey = state.apiKey || document.getElementById('api-key-input').value.trim();
-      if (!apiKey) {
-        showError('请先配置 DeepSeek API Key');
+      if (state.uploadedFile) {
+        await uploadAndParsePDF(action);
+        return;
+      }
+
+      if (text.length === 0) {
+        showError('请输入文本内容或上传PDF文件');
         return;
       }
 
       hideError();
       showLoading();
 
+      let endpoint = '/api/parse';
+      let loadingText = 'AI 正在解析中，请稍候...';
+
+      if (action === 'plan') {
+        endpoint = '/api/generate-plan';
+        loadingText = 'AI 正在生成实验方案，请稍候...';
+      } else if (action === 'extract') {
+        endpoint = '/api/extract-data';
+        loadingText = 'AI 正在提取实验数据，请稍候...';
+      }
+
+      document.getElementById('loading-text').textContent = loadingText;
+
       try {
-        const response = await fetch('/api/parse', {
+        const response = await fetch(endpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -1132,10 +2120,19 @@
           throw new Error(result.error || '解析失败');
         }
 
-        state.parsedData = result.data;
+        if (action === 'parse') {
+          state.parsedData = result.data;
+          renderResults();
+          saveToHistory(text, result.data);
+        } else if (action === 'plan') {
+          state.planData = result.data;
+          renderPlan();
+        } else if (action === 'extract') {
+          state.evidenceData = result.data;
+          renderEvidence();
+        }
+
         hideLoading();
-        renderResults();
-        saveToHistory(text, result.data);
         
       } catch (error) {
         hideLoading();
@@ -1143,14 +2140,113 @@
       }
     }
 
+    async function uploadAndParsePDF(action) {
+      const formData = new FormData();
+      const apiKey = state.apiKey || document.getElementById('api-key-input').value.trim();
+
+      if (!apiKey) {
+        showError('请先配置 DeepSeek API Key');
+        return;
+      }
+
+      formData.append('pdf', state.uploadedFile);
+      formData.append('apiKey', apiKey);
+
+      hideError();
+      showLoading();
+      document.getElementById('loading-text').textContent = '正在解析PDF文件，请稍候...';
+
+      try {
+        const response = await fetch('/api/parse-pdf', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'PDF解析失败');
+        }
+
+        state.parsedData = result.data;
+        renderResults();
+        saveToHistory('PDF文件: ' + state.uploadedFile.name, result.data);
+        hideLoading();
+        
+      } catch (error) {
+        hideLoading();
+        showError(error.message || 'PDF解析失败，请重试');
+      }
+    }
+
+    async function comparePapers() {
+      const apiKey = state.apiKey || document.getElementById('api-key-input').value.trim();
+
+      if (!apiKey) {
+        showError('请先配置 DeepSeek API Key');
+        return;
+      }
+
+      const papers = [];
+      const container = document.getElementById('multi-paper-container');
+      const items = container.querySelectorAll('.paper-item');
+
+      items.forEach((item, index) => {
+        const text = item.querySelector('textarea').value.trim();
+        if (text.length > 0) {
+          papers.push({
+            title: `论文 ${index + 1}`,
+            content: text
+          });
+        }
+      });
+
+      if (papers.length < 2) {
+        showError('请至少输入2篇论文的内容');
+        return;
+      }
+
+      hideError();
+      showLoading();
+      document.getElementById('loading-text').textContent = 'AI 正在对比分析论文，请稍候...';
+
+      try {
+        const response = await fetch('/api/compare-papers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ papers, apiKey })
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || '对比分析失败');
+        }
+
+        state.compareData = result.data;
+        renderCompare();
+        hideLoading();
+        
+      } catch (error) {
+        hideLoading();
+        showError(error.message || '对比分析失败，请重试');
+      }
+    }
+
     function showLoading() {
       document.getElementById('loading').style.display = 'block';
-      document.getElementById('parse-btn').disabled = true;
+      document.querySelectorAll('.btn-primary, .btn-success').forEach(btn => {
+        btn.disabled = true;
+      });
     }
 
     function hideLoading() {
       document.getElementById('loading').style.display = 'none';
-      document.getElementById('parse-btn').disabled = false;
+      document.querySelectorAll('.btn-primary, .btn-success').forEach(btn => {
+        btn.disabled = false;
+      });
     }
 
     function showError(message) {
@@ -1290,6 +2386,495 @@
       return createCard('readingTips', `<p>${data?.content || '暂无数据'}</p>`);
     }
 
+    function renderPlan() {
+      const container = document.getElementById('plan-container');
+      const data = state.planData;
+      
+      container.innerHTML = '';
+
+      if (data.executionChecklist && data.executionChecklist.length > 0) {
+        let checklistHtml = '';
+        data.executionChecklist.forEach((item, index) => {
+          const priorityClass = item.priority === '高' ? 'badge-high' : item.priority === '中' ? 'badge-medium' : 'badge-low';
+          checklistHtml += `
+            <div class="checklist-item" onclick="toggleChecklistItem(this, ${index})">
+              <div class="checklist-checkbox"></div>
+              <div class="checklist-content">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div class="checklist-text">${item.task}</div>
+                  <span class="checklist-badge ${priorityClass}">${item.priority}优先级</span>
+                </div>
+                <div class="checklist-notes">${item.notes || ''}</div>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon" style="background: #dbeafe;">
+                ✅
+              </div>
+              <div class="card-title">可勾选执行清单</div>
+            </div>
+            <div class="card-content">
+              ${checklistHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      if (data.codeScripts && data.codeScripts.length > 0) {
+        let codeHtml = '';
+        data.codeScripts.forEach(script => {
+          codeHtml += `
+            <div class="code-card">
+              <div class="code-header">
+                <div class="code-title">${script.name}</div>
+                <span class="code-lang">${script.language}</span>
+              </div>
+              <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">${script.description}</p>
+              <div class="code-block">
+                <pre>${escapeHtml(script.code)}</pre>
+              </div>
+            </div>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon" style="background: #ddd6fe;">
+                💻
+              </div>
+              <div class="card-title">可复用代码脚本</div>
+            </div>
+            <div class="card-content">
+              ${codeHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      if (data.riskWarnings && data.riskWarnings.length > 0) {
+        let riskHtml = '';
+        data.riskWarnings.forEach(risk => {
+          const severityClass = risk.severity === '高' ? 'severity-high' : risk.severity === '中' ? 'severity-medium' : 'severity-low';
+          riskHtml += `
+            <div class="risk-card ${severityClass}">
+              <div class="risk-header">
+                <div class="risk-type">${risk.riskType}</div>
+                <span class="checklist-badge ${risk.severity === '高' ? 'badge-high' : risk.severity === '中' ? 'badge-medium' : 'badge-low'}">${risk.severity}风险</span>
+              </div>
+              <div class="risk-description">${risk.description}</div>
+              <div class="risk-mitigation">💡 缓解措施: ${risk.mitigation}</div>
+            </div>
+          `;
+        });
+
+        container.innerHTML += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon" style="background: #fef2f2;">
+                ⚠️
+              </div>
+              <div class="card-title">风险预警提示</div>
+            </div>
+            <div class="card-content">
+              ${riskHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      document.getElementById('results-section').classList.add('show');
+      switchTab('plan');
+    }
+
+    function toggleChecklistItem(element, index) {
+      element.classList.toggle('checked');
+      state.checklistState[index] = element.classList.contains('checked');
+    }
+
+    function renderEvidence() {
+      const container = document.getElementById('evidence-container');
+      const chain = state.evidenceData?.evidenceChain;
+      
+      if (!chain) {
+        container.innerHTML = '<p>暂无数据</p>';
+        document.getElementById('results-section').classList.add('show');
+        switchTab('evidence');
+        return;
+      }
+
+      let methodsHtml = '';
+      if (chain.experimentMethods && chain.experimentMethods.length > 0) {
+        chain.experimentMethods.forEach(method => {
+          let linksHtml = '';
+          if (method.dataIds && method.dataIds.length > 0) {
+            method.dataIds.forEach(id => {
+              linksHtml += `<span class="link-pill data-link">📊 数据: ${id}</span>`;
+            });
+          }
+          if (method.conclusionIds && method.conclusionIds.length > 0) {
+            method.conclusionIds.forEach(id => {
+              linksHtml += `<span class="link-pill conclusion-link">🏆 结论: ${id}</span>`;
+            });
+          }
+          
+          methodsHtml += `
+            <div class="evidence-item">
+              <div class="evidence-item-name">${method.name}</div>
+              <div class="evidence-item-desc">${method.description || ''}</div>
+              ${linksHtml ? `<div class="evidence-item-links">${linksHtml}</div>` : ''}
+            </div>
+          `;
+        });
+      }
+
+      let dataHtml = '';
+      if (chain.supportingData && chain.supportingData.length > 0) {
+        chain.supportingData.forEach(data => {
+          let linksHtml = '';
+          if (data.methodIds && data.methodIds.length > 0) {
+            data.methodIds.forEach(id => {
+              linksHtml += `<span class="link-pill method-link">📐 方法: ${id}</span>`;
+            });
+          }
+          if (data.conclusionIds && data.conclusionIds.length > 0) {
+            data.conclusionIds.forEach(id => {
+              linksHtml += `<span class="link-pill conclusion-link">🏆 结论: ${id}</span>`;
+            });
+          }
+          
+          dataHtml += `
+            <div class="evidence-item">
+              <div class="evidence-item-name">${data.name} <span style="font-size: 0.8rem; color: var(--text-secondary);">(${data.type})</span></div>
+              <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin: 0.25rem 0;">
+                ${data.value} ${data.unit || ''}
+                ${data.significance ? `<span style="font-size: 0.85rem; color: var(--success-color);">(${data.significance})</span>` : ''}
+              </div>
+              ${linksHtml ? `<div class="evidence-item-links">${linksHtml}</div>` : ''}
+            </div>
+          `;
+        });
+      }
+
+      let conclusionsHtml = '';
+      if (chain.coreConclusions && chain.coreConclusions.length > 0) {
+        chain.coreConclusions.forEach(conclusion => {
+          let linksHtml = '';
+          if (conclusion.dataIds && conclusion.dataIds.length > 0) {
+            conclusion.dataIds.forEach(id => {
+              linksHtml += `<span class="link-pill data-link">📊 数据: ${id}</span>`;
+            });
+          }
+          if (conclusion.methodIds && conclusion.methodIds.length > 0) {
+            conclusion.methodIds.forEach(id => {
+              linksHtml += `<span class="link-pill method-link">📐 方法: ${id}</span>`;
+            });
+          }
+          
+          const strengthClass = conclusion.strength === '强' ? 'badge-high' : conclusion.strength === '中' ? 'badge-medium' : 'badge-low';
+          
+          conclusionsHtml += `
+            <div class="evidence-item">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div class="evidence-item-name">${conclusion.id}</div>
+                <span class="checklist-badge ${strengthClass}">${conclusion.strength}证据</span>
+              </div>
+              <div class="evidence-item-desc">${conclusion.content}</div>
+              ${conclusion.limitations ? `<div style="font-size: 0.85rem; color: var(--warning-color); margin-top: 0.25rem;">⚠️ 局限性: ${conclusion.limitations}</div>` : ''}
+              ${linksHtml ? `<div class="evidence-item-links">${linksHtml}</div>` : ''}
+            </div>
+          `;
+        });
+      }
+
+      let statsHtml = '';
+      if (chain.keyStatistics && chain.keyStatistics.length > 0) {
+        chain.keyStatistics.forEach(stat => {
+          statsHtml += `
+            <div class="stats-card">
+              <div class="stats-name">${stat.name}</div>
+              <div class="stats-value">${stat.value}</div>
+              ${stat.relatedConclusion ? `<div class="stats-conclusion">📌 ${stat.relatedConclusion}</div>` : ''}
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML = `
+        <div class="evidence-chain">
+          <div class="evidence-level level-methods">
+            <div class="evidence-header">
+              <div class="evidence-icon">📐</div>
+              <div class="evidence-title">实验方法层</div>
+            </div>
+            ${methodsHtml || '<p>暂无方法数据</p>'}
+          </div>
+
+          <div class="evidence-level level-data">
+            <div class="evidence-header">
+              <div class="evidence-icon">📊</div>
+              <div class="evidence-title">支撑数据层</div>
+            </div>
+            ${dataHtml || '<p>暂无支撑数据</p>'}
+          </div>
+
+          <div class="evidence-level level-conclusions">
+            <div class="evidence-header">
+              <div class="evidence-icon">🏆</div>
+              <div class="evidence-title">核心结论层</div>
+            </div>
+            ${conclusionsHtml || '<p>暂无结论数据</p>'}
+          </div>
+
+          ${statsHtml ? `
+            <div class="card">
+              <div class="card-header">
+                <div class="card-icon" style="background: #fef3c7;">
+                  📈
+                </div>
+                <div class="card-title">关键统计指标</div>
+              </div>
+              <div class="card-content">
+                ${statsHtml}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      document.getElementById('results-section').classList.add('show');
+      switchTab('evidence');
+    }
+
+    function renderCompare() {
+      const container = document.getElementById('compare-container');
+      const data = state.compareData;
+      
+      let html = '';
+
+      if (data.variableAlignment && data.variableAlignment.variables && data.variableAlignment.variables.length > 0) {
+        let tableHtml = '<table class="comparison-table"><thead><tr><th>变量名称</th>';
+        
+        const papers = Object.keys(data.variableAlignment.variables[0].papers || {}).sort();
+        papers.forEach(p => {
+          tableHtml += `<th>论文 ${p}</th>`;
+        });
+        tableHtml += '</tr></thead><tbody>';
+        
+        data.variableAlignment.variables.forEach(v => {
+          tableHtml += '<tr>';
+          tableHtml += `<td>
+            <div class="var-name">${v.name}</div>
+            ${v.alignmentNote ? `<div class="var-note">💡 ${v.alignmentNote}</div>` : ''}
+          </td>`;
+          
+          papers.forEach(p => {
+            tableHtml += `<td>${v.papers[p] || '-'}</td>`;
+          });
+          
+          tableHtml += '</tr>';
+        });
+        
+        tableHtml += '</tbody></table>';
+        
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon" style="background: #dbeafe;">
+                ⚖️
+              </div>
+              <div class="card-title">变量对齐表</div>
+            </div>
+            <div class="card-content" style="overflow-x: auto;">
+              ${tableHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      if (data.conclusionComparison) {
+        if (data.conclusionComparison.similarPoints && data.conclusionComparison.similarPoints.length > 0) {
+          let similarHtml = '';
+          data.conclusionComparison.similarPoints.forEach(p => {
+            similarHtml += `
+              <div class="similar-point">
+                <div class="point-label similar">✓ 相同结论 (论文 ${p.paperIndices.join(', ')})</div>
+                <div>${p.content}</div>
+              </div>
+            `;
+          });
+          
+          html += `
+            <div class="card">
+              <div class="card-header">
+                <div class="card-icon" style="background: #dcfce7;">
+                  ✅
+                </div>
+                <div class="card-title">结论相同点</div>
+              </div>
+              <div class="card-content">
+                ${similarHtml}
+              </div>
+            </div>
+          `;
+        }
+
+        if (data.conclusionComparison.differentPoints && data.conclusionComparison.differentPoints.length > 0) {
+          let differentHtml = '';
+          data.conclusionComparison.differentPoints.forEach(p => {
+            differentHtml += `
+              <div class="different-point">
+                <div class="point-label different">✗ 结论差异</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">论文 1</div>
+                    <div>${p.paper1}</div>
+                  </div>
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">论文 2</div>
+                    <div>${p.paper2}</div>
+                  </div>
+                </div>
+                ${p.differenceNote ? `<div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">💡 ${p.differenceNote}</div>` : ''}
+              </div>
+            `;
+          });
+          
+          html += `
+            <div class="card">
+              <div class="card-header">
+                <div class="card-icon" style="background: #fef2f2;">
+                  ✗
+                </div>
+                <div class="card-title">结论不同点</div>
+              </div>
+              <div class="card-content">
+                ${differentHtml}
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      if (data.methodEvolution) {
+        let timelineHtml = '';
+        
+        if (data.methodEvolution.timeline && data.methodEvolution.timeline.length > 0) {
+          data.methodEvolution.timeline.forEach(item => {
+            let innovationsHtml = '';
+            let influencesHtml = '';
+            
+            if (item.innovations && item.innovations.length > 0) {
+              innovationsHtml = `<div style="margin-top: 0.25rem;">🚀 创新点: ${item.innovations.join('、')}</div>`;
+            }
+            
+            if (item.previousInfluences && item.previousInfluences.length > 0) {
+              influencesHtml = `<div style="margin-top: 0.25rem; color: var(--text-secondary);">📚 受影响于: ${item.previousInfluences.join('、')}</div>`;
+            }
+            
+            timelineHtml += `
+              <div class="timeline-item">
+                <div class="timeline-paper">论文 ${item.paperIndex}</div>
+                <div class="timeline-method">${item.method}</div>
+                <div class="timeline-details">
+                  ${innovationsHtml}
+                  ${influencesHtml}
+                </div>
+              </div>
+            `;
+          });
+        }
+        
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon" style="background: #fef3c7;">
+                📈
+              </div>
+              <div class="card-title">方法演进脉络</div>
+            </div>
+            <div class="card-content">
+              ${data.methodEvolution.evolutionSummary ? `<p style="margin-bottom: 1rem; padding: 1rem; background: var(--bg-color); border-radius: 8px;">${data.methodEvolution.evolutionSummary}</p>` : ''}
+              <div class="timeline">
+                ${timelineHtml || '<p>暂无演进数据</p>'}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (data.comprehensiveEvaluation && data.comprehensiveEvaluation.length > 0) {
+        let evalHtml = '';
+        data.comprehensiveEvaluation.forEach(eval => {
+          let strengthsHtml = '';
+          let weaknessesHtml = '';
+          
+          if (eval.strengths && eval.strengths.length > 0) {
+            strengthsHtml = '<ul class="strengths-list">';
+            eval.strengths.forEach(s => {
+              strengthsHtml += `<li>${s}</li>`;
+            });
+            strengthsHtml += '</ul>';
+          }
+          
+          if (eval.weaknesses && eval.weaknesses.length > 0) {
+            weaknessesHtml = '<ul class="weaknesses-list">';
+            eval.weaknesses.forEach(w => {
+              weaknessesHtml += `<li>${w}</li>`;
+            });
+            weaknessesHtml += '</ul>';
+          }
+          
+          evalHtml += `
+            <div class="evaluation-card">
+              <div class="evaluation-title">${eval.title || `论文 ${eval.paperIndex}`}</div>
+              ${eval.uniqueContribution ? `<p style="margin-bottom: 1rem; padding: 0.75rem; background: #f0fdf4; border-left: 4px solid var(--success-color); border-radius: 4px;"><strong>独特贡献:</strong> ${eval.uniqueContribution}</p>` : ''}
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                  <h4 style="color: var(--success-color); margin-bottom: 0.5rem;">✓ 优势</h4>
+                  ${strengthsHtml || '<p style="color: var(--text-secondary);">暂无</p>'}
+                </div>
+                <div>
+                  <h4 style="color: var(--danger-color); margin-bottom: 0.5rem;">✗ 劣势</h4>
+                  ${weaknessesHtml || '<p style="color: var(--text-secondary);">暂无</p>'}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        
+        html += `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-icon" style="background: #dbeafe;">
+                📋
+              </div>
+              <div class="card-title">综合评估</div>
+            </div>
+            <div class="card-content">
+              ${evalHtml}
+            </div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html || '<p>暂无对比数据</p>';
+      document.getElementById('results-section').classList.add('show');
+      switchTab('compare');
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     function switchTab(tabName) {
       document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.tab === tabName);
@@ -1297,7 +2882,10 @@
       document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.remove('active');
       });
-      document.getElementById(`tab-${tabName}`).classList.add('active');
+      const tabContent = document.getElementById(`tab-${tabName}`);
+      if (tabContent) {
+        tabContent.classList.add('active');
+      }
     }
 
     function renderStory() {
@@ -1927,13 +3515,16 @@
     }
 
     function copyAllContent() {
-      if (!state.parsedData) {
+      if (!state.parsedData && !state.planData && !state.evidenceData && !state.compareData) {
         showToast('没有可复制的内容', 'error');
         return;
       }
 
-      const data = state.parsedData;
-      const text = `
+      let text = '';
+      
+      if (state.parsedData) {
+        const data = state.parsedData;
+        text += `
 【研究目的】
 ${data.researchPurpose?.content || '无'}
 
@@ -1974,6 +3565,53 @@ ${data.storyInterpretation || '无'}
 【专业术语】
 ${(data.keyTerms || []).map(t => `- ${t.term}：${t.explanation}`).join('\n') || '无'}
 `.trim();
+      }
+      
+      if (state.planData) {
+        const data = state.planData;
+        text += `
+
+【执行清单】
+${(data.executionChecklist || []).map(item => `[${state.checklistState[item.id] ? '✓' : ' '}] ${item.task} (${item.priority}优先级) - ${item.notes || ''}`).join('\n') || '无'}
+
+【代码脚本】
+${(data.codeScripts || []).map(script => `
+【${script.name}】(${script.language})
+${script.description}
+${script.code}
+`).join('\n') || '无'}
+
+【风险预警】
+${(data.riskWarnings || []).map(risk => `
+[${risk.severity}风险] ${risk.riskType}
+${risk.description}
+缓解措施: ${risk.mitigation}
+`).join('\n') || '无'}
+`.trim();
+      }
+      
+      if (state.evidenceData?.evidenceChain) {
+        const chain = state.evidenceData.evidenceChain;
+        text += `
+
+【三级证据链】
+
+实验方法层：
+${(chain.experimentMethods || []).map(m => `
+- ${m.name}: ${m.description || ''}
+`).join('') || '无'}
+
+支撑数据层：
+${(chain.supportingData || []).map(d => `
+- ${d.name} (${d.type}): ${d.value} ${d.unit || ''}
+`).join('') || '无'}
+
+核心结论层：
+${(chain.coreConclusions || []).map(c => `
+- [${c.strength}] ${c.content}
+`).join('') || '无'}
+`.trim();
+      }
 
       copyToClipboard(text);
     }
