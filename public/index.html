@@ -2151,10 +2151,18 @@
 
       formData.append('pdf', state.uploadedFile);
       formData.append('apiKey', apiKey);
+      formData.append('action', action || 'parse');
 
       hideError();
       showLoading();
-      document.getElementById('loading-text').textContent = '正在解析PDF文件，请稍候...';
+      
+      let loadingText = '正在解析PDF文件，请稍候...';
+      if (action === 'plan') {
+        loadingText = '正在从PDF生成实验方案，请稍候...';
+      } else if (action === 'extract') {
+        loadingText = '正在从PDF提取实验数据，请稍候...';
+      }
+      document.getElementById('loading-text').textContent = loadingText;
 
       try {
         const response = await fetch('/api/parse-pdf', {
@@ -2168,9 +2176,18 @@
           throw new Error(result.error || 'PDF解析失败');
         }
 
-        state.parsedData = result.data;
-        renderResults();
-        saveToHistory('PDF文件: ' + state.uploadedFile.name, result.data);
+        if (action === 'plan') {
+          state.planData = result.data;
+          renderPlan();
+        } else if (action === 'extract') {
+          state.evidenceData = result.data;
+          renderEvidence();
+        } else {
+          state.parsedData = result.data;
+          renderResults();
+          saveToHistory('PDF文件: ' + state.uploadedFile.name, result.data);
+        }
+        
         hideLoading();
         
       } catch (error) {
@@ -2885,6 +2902,71 @@
       const tabContent = document.getElementById(`tab-${tabName}`);
       if (tabContent) {
         tabContent.classList.add('active');
+      }
+
+      const resultsSection = document.getElementById('results-section');
+      
+      if (tabName === 'plan') {
+        if (state.planData) {
+          resultsSection.classList.add('show');
+          renderPlan();
+        } else {
+          const container = document.getElementById('plan-container');
+          container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 3rem;">
+              <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+              <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">暂无实验方案</h3>
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">请输入实验文本或上传PDF文件，然后点击"生成实验方案"按钮</p>
+              <button class="btn btn-primary" onclick="document.getElementById('generate-plan-btn').click()">
+                <span>🚀</span> 生成实验方案
+              </button>
+            </div>
+          `;
+          resultsSection.classList.add('show');
+        }
+      } else if (tabName === 'evidence') {
+        if (state.evidenceData) {
+          resultsSection.classList.add('show');
+          renderEvidence();
+        } else {
+          const container = document.getElementById('evidence-container');
+          container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 3rem;">
+              <div style="font-size: 4rem; margin-bottom: 1rem;">🔗</div>
+              <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">暂无证据链数据</h3>
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">请输入实验文本或上传PDF文件，然后点击"提取实验数据"按钮</p>
+              <button class="btn btn-primary" onclick="document.getElementById('extract-data-btn').click()">
+                <span>📊</span> 提取实验数据
+              </button>
+            </div>
+          `;
+          resultsSection.classList.add('show');
+        }
+      } else if (tabName === 'compare') {
+        if (state.compareData) {
+          resultsSection.classList.add('show');
+          renderCompare();
+        } else {
+          const container = document.getElementById('compare-container');
+          container.innerHTML = `
+            <div class="card" style="text-align: center; padding: 3rem;">
+              <div style="font-size: 4rem; margin-bottom: 1rem;">⚖️</div>
+              <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">暂无对比分析数据</h3>
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">请切换到"多论文对比"模式，输入2-5篇论文内容，然后点击"开始对比分析"按钮</p>
+              <button class="btn btn-primary" onclick="switchMode('compare'); document.querySelector('.mode-tab[data-mode=\"compare\"]').scrollIntoView({behavior: 'smooth'})">
+                <span>📑</span> 切换到多论文对比模式
+              </button>
+            </div>
+          `;
+          resultsSection.classList.add('show');
+        }
+      } else if (tabName === 'cards' || tabName === 'mindmap' || tabName === 'story' || tabName === 'terms') {
+        if (state.parsedData) {
+          resultsSection.classList.add('show');
+        } else {
+          resultsSection.classList.remove('show');
+          showToast('请先解析实验文本', 'error');
+        }
       }
     }
 

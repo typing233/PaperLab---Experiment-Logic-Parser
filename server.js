@@ -141,13 +141,41 @@ app.post('/api/parse', async (req, res) => {
   }
 });
 
+app.post('/api/extract-pdf-text', upload.single('pdf'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: '请上传PDF文件' });
+    }
+
+    const dataBuffer = req.file.buffer;
+    const pdfData = await pdfParse(dataBuffer);
+    const text = pdfData.text;
+
+    if (!text || text.trim().length === 0) {
+      return res.status(400).json({ error: 'PDF文件中未找到可提取的文本' });
+    }
+
+    console.log(`PDF文本提取成功，长度: ${text.length} 字符`);
+
+    res.json({ 
+      success: true, 
+      text: text,
+      fileName: req.file.originalname
+    });
+    
+  } catch (error) {
+    console.error('PDF文本提取错误:', error.message);
+    res.status(500).json({ error: error.message || 'PDF解析失败，请稍后重试' });
+  }
+});
+
 app.post('/api/parse-pdf', upload.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: '请上传PDF文件' });
     }
 
-    const { apiKey } = req.body;
+    const { apiKey, action } = req.body;
     if (!apiKey) {
       return res.status(400).json({ error: '请配置DeepSeek API Key' });
     }
@@ -160,9 +188,112 @@ app.post('/api/parse-pdf', upload.single('pdf'), async (req, res) => {
       return res.status(400).json({ error: 'PDF文件中未找到可提取的文本' });
     }
 
-    console.log(`PDF解析成功，提取文本长度: ${text.length} 字符`);
+    console.log(`PDF解析成功，提取文本长度: ${text.length} 字符，操作类型: ${action || 'parse'}`);
 
-    const systemPrompt = `你是一位专业的学术研究助理，擅长将复杂的学术实验文本拆解为结构化的逻辑模块。请将用户提供的实验文本按照以下9个模块进行结构化解析：
+    let systemPrompt = '';
+    let endpointType = action || 'parse';
+
+    if (action === 'plan') {
+      systemPrompt = `你是一位专业的实验方案规划专家。请基于用户提供的实验文本，生成以下三个模块的内容：
+
+1. 可勾选执行清单：将实验步骤拆解为具体的、可执行的任务清单，每个任务都是可勾选完成的
+2. 可复用代码脚本：提供常见实验数据分析的Python/R代码模板，包含数据处理、统计分析、可视化等
+3. 风险预警提示：识别实验执行过程中可能遇到的风险点，包括技术风险、操作风险、伦理风险等
+
+请以JSON格式返回结果，格式如下：
+{
+  "executionChecklist": [
+    {
+      "id": 1,
+      "task": "具体任务描述",
+      "category": "准备工作/数据收集/数据分析/报告撰写",
+      "priority": "高/中/低",
+      "notes": "注意事项"
+    }
+  ],
+  "codeScripts": [
+    {
+      "name": "代码名称",
+      "language": "Python/R",
+      "description": "代码功能描述",
+      "code": "完整的代码示例"
+    }
+  ],
+  "riskWarnings": [
+    {
+      "id": 1,
+      "riskType": "技术风险/操作风险/伦理风险/数据风险",
+      "description": "风险描述",
+      "severity": "高/中/低",
+      "mitigation": "缓解措施"
+    }
+  ]
+}
+
+注意：
+- 执行清单要具体、可操作，每个任务都应该是可独立完成的
+- 代码脚本要实用、可直接修改使用
+- 风险预警要全面，涵盖实验全流程
+- 所有内容都要用中文回答`;
+    } else if (action === 'extract') {
+      systemPrompt = `你是一位专业的实验数据提取专家。请从用户提供的实验文本中提取以下三级证据链：
+
+1. 实验方法层：提取实验中使用的所有方法、技术、实验设计等
+2. 支撑数据层：提取实验中的所有关键数据、统计指标、样本量等
+3. 核心结论层：提取实验得出的所有核心结论，并关联到支撑数据
+
+请以JSON格式返回结果，格式如下：
+{
+  "evidenceChain": {
+    "experimentMethods": [
+      {
+        "id": "m1",
+        "name": "方法名称",
+        "description": "方法描述",
+        "dataIds": ["d1", "d2"],
+        "conclusionIds": ["c1"]
+      }
+    ],
+    "supportingData": [
+      {
+        "id": "d1",
+        "type": "统计指标/样本量/测量值",
+        "name": "数据名称",
+        "value": "数值或描述",
+        "unit": "单位（如适用）",
+        "significance": "显著性（如p<0.05）",
+        "methodIds": ["m1"],
+        "conclusionIds": ["c1"]
+      }
+    ],
+    "coreConclusions": [
+      {
+        "id": "c1",
+        "content": "结论内容",
+        "strength": "强/中/弱",
+        "dataIds": ["d1", "d2"],
+        "methodIds": ["m1"],
+        "limitations": "该结论的局限性"
+      }
+    ],
+    "keyStatistics": [
+      {
+        "name": "统计指标名称",
+        "value": "数值",
+        "relatedConclusion": "关联的结论",
+        "confidence": "置信度"
+      }
+    ]
+  }
+}
+
+注意：
+- 建立清晰的三级证据链关联关系
+- 数据层要包含所有关键统计指标
+- 结论层要与数据层和方法层建立明确关联
+- 所有内容都要用中文回答`;
+    } else {
+      systemPrompt = `你是一位专业的学术研究助理，擅长将复杂的学术实验文本拆解为结构化的逻辑模块。请将用户提供的实验文本按照以下9个模块进行结构化解析：
 
 1. 研究目的：用一句话概括实验要做什么，明确研究的核心目标
 2. 实验假设：明确实验的核心假设是什么，包括零假设和备择假设
@@ -205,6 +336,7 @@ app.post('/api/parse-pdf', upload.single('pdf'), async (req, res) => {
 - keyTerms部分要提取文本中的3-5个关键专业术语并给出通俗解释
 - 所有内容都要用中文回答
 - 确保每个模块内容准确、全面、易于理解`;
+    }
 
     const response = await axios.post(
       'https://api.deepseek.com/v1/chat/completions',
