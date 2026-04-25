@@ -310,6 +310,109 @@
       resize: vertical;
     }
 
+    .paper-input-tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .paper-input-tab {
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px 6px 0 0;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .paper-input-tab:hover {
+      background: var(--bg-color);
+    }
+
+    .paper-input-tab.active {
+      background: var(--card-bg);
+      border-bottom-color: var(--card-bg);
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    .paper-input-content {
+      display: none;
+    }
+
+    .paper-input-content.active {
+      display: block;
+    }
+
+    .compact-upload-area {
+      border: 2px dashed var(--border-color);
+      border-radius: 6px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background: var(--card-bg);
+    }
+
+    .compact-upload-area:hover,
+    .compact-upload-area.dragover {
+      border-color: var(--primary-color);
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .compact-upload-area input[type="file"] {
+      display: none;
+    }
+
+    .compact-upload-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .compact-upload-text {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .paper-file-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--card-bg);
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+
+    .paper-file-icon {
+      font-size: 1.5rem;
+    }
+
+    .paper-file-details {
+      flex: 1;
+    }
+
+    .paper-file-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .paper-file-size {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .paper-file-remove {
+      background: #fef2f2;
+      color: var(--danger-color);
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
     .add-paper-btn {
       display: flex;
       align-items: center;
@@ -1638,14 +1741,40 @@
             <div class="paper-item-header">
               <span class="paper-item-title">📄 论文 1</span>
             </div>
-            <textarea placeholder="请粘贴第1篇论文的实验文本内容..."></textarea>
+            <div class="paper-input-tabs">
+              <button class="paper-input-tab active" data-input-mode="text">粘贴文本</button>
+              <button class="paper-input-tab" data-input-mode="pdf">上传PDF</button>
+            </div>
+            <div class="paper-input-content active" data-input-content="text">
+              <textarea placeholder="请粘贴第1篇论文的实验文本内容..."></textarea>
+            </div>
+            <div class="paper-input-content" data-input-content="pdf">
+              <div class="compact-upload-area" data-paper-upload="1">
+                <input type="file" accept=".pdf">
+                <div class="compact-upload-icon">📎</div>
+                <div class="compact-upload-text">点击或拖拽PDF文件到此处上传</div>
+              </div>
+            </div>
           </div>
           <div class="paper-item" data-index="2">
             <div class="paper-item-header">
               <span class="paper-item-title">📄 论文 2</span>
               <button class="paper-item-remove" onclick="removePaper(this)">× 移除</button>
             </div>
-            <textarea placeholder="请粘贴第2篇论文的实验文本内容..."></textarea>
+            <div class="paper-input-tabs">
+              <button class="paper-input-tab active" data-input-mode="text">粘贴文本</button>
+              <button class="paper-input-tab" data-input-mode="pdf">上传PDF</button>
+            </div>
+            <div class="paper-input-content active" data-input-content="text">
+              <textarea placeholder="请粘贴第2篇论文的实验文本内容..."></textarea>
+            </div>
+            <div class="paper-input-content" data-input-content="pdf">
+              <div class="compact-upload-area" data-paper-upload="2">
+                <input type="file" accept=".pdf">
+                <div class="compact-upload-icon">📎</div>
+                <div class="compact-upload-text">点击或拖拽PDF文件到此处上传</div>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -1820,7 +1949,8 @@
       currentMode: 'single',
       paperCount: 2,
       uploadedFile: null,
-      checklistState: {}
+      checklistState: {},
+      comparePapers: {}
     };
 
     const moduleIcons = {
@@ -1841,6 +1971,7 @@
       renderHistory();
       initMindmap();
       initFileUpload();
+      initComparePaperUploads();
     });
 
     function initEventListeners() {
@@ -1941,6 +2072,139 @@
       return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
     }
 
+    function initComparePaperUploads() {
+      document.querySelectorAll('.paper-input-tab').forEach(tab => {
+        tab.removeEventListener('click', handlePaperInputTabClick);
+        tab.addEventListener('click', handlePaperInputTabClick);
+      });
+
+      document.querySelectorAll('.compact-upload-area').forEach(area => {
+        const paperIndex = area.dataset.paperUpload;
+        const fileInput = area.querySelector('input[type="file"]');
+        
+        area.removeEventListener('click', handleCompactUploadClick);
+        area.addEventListener('click', handleCompactUploadClick);
+
+        area.removeEventListener('dragover', handleCompactUploadDragOver);
+        area.addEventListener('dragover', handleCompactUploadDragOver);
+
+        area.removeEventListener('dragleave', handleCompactUploadDragLeave);
+        area.addEventListener('dragleave', handleCompactUploadDragLeave);
+
+        area.removeEventListener('drop', handleCompactUploadDrop);
+        area.addEventListener('drop', handleCompactUploadDrop);
+
+        if (fileInput) {
+          fileInput.removeEventListener('change', handleCompactFileChange);
+          fileInput.addEventListener('change', handleCompactFileChange);
+        }
+      });
+    }
+
+    function handlePaperInputTabClick(e) {
+      const tab = e.target;
+      const mode = tab.dataset.inputMode;
+      const paperItem = tab.closest('.paper-item');
+      const paperIndex = paperItem.dataset.index;
+
+      paperItem.querySelectorAll('.paper-input-tab').forEach(t => {
+        t.classList.toggle('active', t === tab);
+      });
+
+      paperItem.querySelectorAll('.paper-input-content').forEach(content => {
+        content.classList.toggle('active', content.dataset.inputContent === mode);
+      });
+    }
+
+    function handleCompactUploadClick(e) {
+      const area = e.currentTarget;
+      const fileInput = area.querySelector('input[type="file"]');
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
+
+    function handleCompactUploadDragOver(e) {
+      e.preventDefault();
+      e.currentTarget.classList.add('dragover');
+    }
+
+    function handleCompactUploadDragLeave(e) {
+      e.currentTarget.classList.remove('dragover');
+    }
+
+    function handleCompactUploadDrop(e) {
+      e.preventDefault();
+      const area = e.currentTarget;
+      area.classList.remove('dragover');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && files[0].type === 'application/pdf') {
+        const paperIndex = area.dataset.paperUpload;
+        handleComparePaperFileSelect(paperIndex, files[0]);
+      } else {
+        showToast('请选择有效的PDF文件', 'error');
+      }
+    }
+
+    function handleCompactFileChange(e) {
+      const fileInput = e.target;
+      const area = fileInput.closest('.compact-upload-area');
+      const paperIndex = area.dataset.paperUpload;
+      
+      if (fileInput.files.length > 0) {
+        handleComparePaperFileSelect(paperIndex, fileInput.files[0]);
+      }
+    }
+
+    function handleComparePaperFileSelect(paperIndex, file) {
+      if (file.size > 50 * 1024 * 1024) {
+        showToast('文件大小不能超过50MB', 'error');
+        return;
+      }
+
+      state.comparePapers[paperIndex] = {
+        file: file,
+        extractedText: null
+      };
+
+      const paperItem = document.querySelector(`.paper-item[data-index="${paperIndex}"]`);
+      const pdfContent = paperItem.querySelector('[data-input-content="pdf"]');
+      
+      pdfContent.innerHTML = `
+        <div class="paper-file-info">
+          <div class="paper-file-icon">📄</div>
+          <div class="paper-file-details">
+            <div class="paper-file-name">${file.name}</div>
+            <div class="paper-file-size">${formatFileSize(file.size)}</div>
+          </div>
+          <button class="paper-file-remove" onclick="clearComparePaperFile('${paperIndex}')">移除</button>
+        </div>
+      `;
+
+      showToast(`论文 ${paperIndex} 的PDF文件已上传`);
+    }
+
+    function clearComparePaperFile(paperIndex) {
+      if (state.comparePapers[paperIndex]) {
+        delete state.comparePapers[paperIndex];
+      }
+
+      const paperItem = document.querySelector(`.paper-item[data-index="${paperIndex}"]`);
+      const pdfContent = paperItem.querySelector('[data-input-content="pdf"]');
+      
+      pdfContent.innerHTML = `
+        <div class="compact-upload-area" data-paper-upload="${paperIndex}">
+          <input type="file" accept=".pdf">
+          <div class="compact-upload-icon">📎</div>
+          <div class="compact-upload-text">点击或拖拽PDF文件到此处上传</div>
+        </div>
+      `;
+
+      initComparePaperUploads();
+      showToast(`论文 ${paperIndex} 的PDF文件已移除`);
+    }
+
     function switchMode(mode) {
       state.currentMode = mode;
       
@@ -2001,24 +2265,52 @@
     }
 
     function clearCompareInput() {
+      state.comparePapers = {};
       const container = document.getElementById('multi-paper-container');
       container.innerHTML = `
         <div class="paper-item" data-index="1">
           <div class="paper-item-header">
             <span class="paper-item-title">📄 论文 1</span>
           </div>
-          <textarea placeholder="请粘贴第1篇论文的实验文本内容..."></textarea>
+          <div class="paper-input-tabs">
+            <button class="paper-input-tab active" data-input-mode="text">粘贴文本</button>
+            <button class="paper-input-tab" data-input-mode="pdf">上传PDF</button>
+          </div>
+          <div class="paper-input-content active" data-input-content="text">
+            <textarea placeholder="请粘贴第1篇论文的实验文本内容..."></textarea>
+          </div>
+          <div class="paper-input-content" data-input-content="pdf">
+            <div class="compact-upload-area" data-paper-upload="1">
+              <input type="file" accept=".pdf">
+              <div class="compact-upload-icon">📎</div>
+              <div class="compact-upload-text">点击或拖拽PDF文件到此处上传</div>
+            </div>
+          </div>
         </div>
         <div class="paper-item" data-index="2">
           <div class="paper-item-header">
             <span class="paper-item-title">📄 论文 2</span>
             <button class="paper-item-remove" onclick="removePaper(this)">× 移除</button>
           </div>
-          <textarea placeholder="请粘贴第2篇论文的实验文本内容..."></textarea>
+          <div class="paper-input-tabs">
+            <button class="paper-input-tab active" data-input-mode="text">粘贴文本</button>
+            <button class="paper-input-tab" data-input-mode="pdf">上传PDF</button>
+          </div>
+          <div class="paper-input-content active" data-input-content="text">
+            <textarea placeholder="请粘贴第2篇论文的实验文本内容..."></textarea>
+          </div>
+          <div class="paper-input-content" data-input-content="pdf">
+            <div class="compact-upload-area" data-paper-upload="2">
+              <input type="file" accept=".pdf">
+              <div class="compact-upload-icon">📎</div>
+              <div class="compact-upload-text">点击或拖拽PDF文件到此处上传</div>
+            </div>
+          </div>
         </div>
       `;
       state.paperCount = 2;
       updateAddPaperButton();
+      initComparePaperUploads();
     }
 
     function addPaper() {
@@ -2037,9 +2329,23 @@
           <span class="paper-item-title">📄 论文 ${state.paperCount}</span>
           <button class="paper-item-remove" onclick="removePaper(this)">× 移除</button>
         </div>
-        <textarea placeholder="请粘贴第${state.paperCount}篇论文的实验文本内容..."></textarea>
+        <div class="paper-input-tabs">
+          <button class="paper-input-tab active" data-input-mode="text">粘贴文本</button>
+          <button class="paper-input-tab" data-input-mode="pdf">上传PDF</button>
+        </div>
+        <div class="paper-input-content active" data-input-content="text">
+          <textarea placeholder="请粘贴第${state.paperCount}篇论文的实验文本内容..."></textarea>
+        </div>
+        <div class="paper-input-content" data-input-content="pdf">
+          <div class="compact-upload-area" data-paper-upload="${state.paperCount}">
+            <input type="file" accept=".pdf">
+            <div class="compact-upload-icon">📎</div>
+            <div class="compact-upload-text">点击或拖拽PDF文件到此处上传</div>
+          </div>
+        </div>
       `;
       container.appendChild(newPaper);
+      initComparePaperUploads();
       updateAddPaperButton();
     }
 
@@ -2053,7 +2359,14 @@
       items.forEach((item, index) => {
         item.dataset.index = index + 1;
         item.querySelector('.paper-item-title').textContent = `📄 论文 ${index + 1}`;
-        item.querySelector('textarea').placeholder = `请粘贴第${index + 1}篇论文的实验文本内容...`;
+        const textarea = item.querySelector('textarea');
+        if (textarea) {
+          textarea.placeholder = `请粘贴第${index + 1}篇论文的实验文本内容...`;
+        }
+        const uploadArea = item.querySelector('.compact-upload-area');
+        if (uploadArea) {
+          uploadArea.dataset.paperUpload = index + 1;
+        }
       });
       
       updateAddPaperButton();
@@ -2196,6 +2509,24 @@
       }
     }
 
+    async function extractPdfText(file) {
+      const formData = new FormData();
+      formData.append('pdf', file);
+
+      const response = await fetch('/api/extract-pdf-text', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'PDF文本提取失败');
+      }
+
+      return result.text;
+    }
+
     async function comparePapers() {
       const apiKey = state.apiKey || document.getElementById('api-key-input').value.trim();
 
@@ -2208,26 +2539,45 @@
       const container = document.getElementById('multi-paper-container');
       const items = container.querySelectorAll('.paper-item');
 
-      items.forEach((item, index) => {
-        const text = item.querySelector('textarea').value.trim();
-        if (text.length > 0) {
-          papers.push({
-            title: `论文 ${index + 1}`,
-            content: text
-          });
-        }
-      });
-
-      if (papers.length < 2) {
-        showError('请至少输入2篇论文的内容');
-        return;
-      }
-
       hideError();
       showLoading();
-      document.getElementById('loading-text').textContent = 'AI 正在对比分析论文，请稍候...';
+      document.getElementById('loading-text').textContent = '正在处理论文内容，请稍候...';
 
       try {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          const paperIndex = item.dataset.index;
+          const textarea = item.querySelector('textarea');
+          const text = textarea ? textarea.value.trim() : '';
+          const pdfData = state.comparePapers[paperIndex];
+
+          if (text.length > 0) {
+            papers.push({
+              title: `论文 ${parseInt(i) + 1}`,
+              content: text
+            });
+          } else if (pdfData && pdfData.file) {
+            document.getElementById('loading-text').textContent = `正在提取论文 ${parseInt(i) + 1} 的PDF文本...`;
+            const extractedText = await extractPdfText(pdfData.file);
+            if (extractedText && extractedText.length > 0) {
+              papers.push({
+                title: `论文 ${parseInt(i) + 1}`,
+                content: extractedText,
+                isPdf: true,
+                fileName: pdfData.file.name
+              });
+            }
+          }
+        }
+
+        if (papers.length < 2) {
+          hideLoading();
+          showError('请至少输入或上传2篇论文的内容');
+          return;
+        }
+
+        document.getElementById('loading-text').textContent = 'AI 正在对比分析论文，请稍候...';
+
         const response = await fetch('/api/compare-papers', {
           method: 'POST',
           headers: {
@@ -2917,11 +3267,18 @@
               <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
               <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">暂无实验方案</h3>
               <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">请输入实验文本或上传PDF文件，然后点击"生成实验方案"按钮</p>
-              <button class="btn btn-primary" onclick="document.getElementById('generate-plan-btn').click()">
+              <button class="btn btn-primary" id="quick-generate-plan-btn">
                 <span>🚀</span> 生成实验方案
               </button>
             </div>
           `;
+          const quickBtn = document.getElementById('quick-generate-plan-btn');
+          if (quickBtn) {
+            quickBtn.addEventListener('click', () => {
+              const generateBtn = document.getElementById('generate-plan-btn');
+              if (generateBtn) generateBtn.click();
+            });
+          }
           resultsSection.classList.add('show');
         }
       } else if (tabName === 'evidence') {
@@ -2935,11 +3292,18 @@
               <div style="font-size: 4rem; margin-bottom: 1rem;">🔗</div>
               <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">暂无证据链数据</h3>
               <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">请输入实验文本或上传PDF文件，然后点击"提取实验数据"按钮</p>
-              <button class="btn btn-primary" onclick="document.getElementById('extract-data-btn').click()">
+              <button class="btn btn-primary" id="quick-extract-data-btn">
                 <span>📊</span> 提取实验数据
               </button>
             </div>
           `;
+          const quickBtn = document.getElementById('quick-extract-data-btn');
+          if (quickBtn) {
+            quickBtn.addEventListener('click', () => {
+              const extractBtn = document.getElementById('extract-data-btn');
+              if (extractBtn) extractBtn.click();
+            });
+          }
           resultsSection.classList.add('show');
         }
       } else if (tabName === 'compare') {
@@ -2953,11 +3317,21 @@
               <div style="font-size: 4rem; margin-bottom: 1rem;">⚖️</div>
               <h3 style="margin-bottom: 1rem; color: var(--text-secondary);">暂无对比分析数据</h3>
               <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">请切换到"多论文对比"模式，输入2-5篇论文内容，然后点击"开始对比分析"按钮</p>
-              <button class="btn btn-primary" onclick="switchMode('compare'); document.querySelector('.mode-tab[data-mode=\"compare\"]').scrollIntoView({behavior: 'smooth'})">
+              <button class="btn btn-primary" id="quick-switch-compare-btn">
                 <span>📑</span> 切换到多论文对比模式
               </button>
             </div>
           `;
+          const quickBtn = document.getElementById('quick-switch-compare-btn');
+          if (quickBtn) {
+            quickBtn.addEventListener('click', () => {
+              switchMode('compare');
+              const compareTab = document.querySelector('.mode-tab[data-mode="compare"]');
+              if (compareTab) {
+                compareTab.scrollIntoView({ behavior: 'smooth' });
+              }
+            });
+          }
           resultsSection.classList.add('show');
         }
       } else if (tabName === 'cards' || tabName === 'mindmap' || tabName === 'story' || tabName === 'terms') {
